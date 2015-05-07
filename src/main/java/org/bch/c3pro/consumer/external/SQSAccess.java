@@ -25,7 +25,7 @@ import java.util.logging.Logger;
 /**
  * Created by CH176656 on 5/1/2015.
  */
-public class SQSAccess implements Queue {
+public class SQSAccess {
 
     private AmazonSQS sqs = null;
     Logger log = Logger.getAnonymousLogger();
