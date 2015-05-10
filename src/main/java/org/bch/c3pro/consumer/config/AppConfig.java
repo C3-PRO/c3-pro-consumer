@@ -21,15 +21,17 @@ public class AppConfig {
     public static String AWS_SQS_URL =              "app.aws.sqs.url";
     public static String AWS_SQS_PROFILE =          "app.aws.sqs.profile";
     public static String AWS_SQS_REGION =           "app.aws.sqs.region";
+    public static String AWS_SQS_NAME = 			"app.aws.sqs.name";
 
 
-    // The key posted in the metadata part of the message to SQS. The value will containt th encrypted symetric key
+    // The key posted in the metadata part of the message to SQS. The value will contain the ncrypted symetric key
     // to decrypt the message
     public static String SECURITY_METADATAKEY =     "app.security.metadatakey";
 
     public static String SECURITY_PRIVATEKEY_ALG =   "app.security.privatekey.algorithm";
     public static String SECURITY_PRIVATEKEY_BASEALG =   "app.security.privatekey.basealgorithm";
-
+    public static String SECURITY_PRIVATEKEY_FILE = 	"app.security.privatekey.file";
+    
     public static String UTF = "UTF-8";
     // Whether we encrypt the messages when sent to the queue; yes - no
     public static String SECURITY_ENCRYPTION_ENABLED = "app.security.encryption.enabled";
