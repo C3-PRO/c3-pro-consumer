@@ -34,37 +34,59 @@ import java.util.logging.Logger;
  */
 public class SQSAccess {
 
+    private static SQSAccess sqsAccessSingleton = null;
+
 	private SQSConnection connection;
     Logger log = Logger.getAnonymousLogger();
 
-    public void startListening() throws JMSException, C3PROException {
-    	Session session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-    	MessageConsumer consumer = session.createConsumer( session.createQueue(AppConfig.getProp(AppConfig.AWS_SQS_URL)));
-    	SQSListener listener = new SQSListener();
-        consumer.setMessageListener( listener);
-        connection.start();
-        
+    // just to defeat instantiation
+    protected SQSAccess() {}
+
+    public static SQSAccess getInstance() {
+        if (sqsAccessSingleton == null) {
+            SQSAccess.sqsAccessSingleton = new SQSAccess();
+        }
+        return SQSAccess.sqsAccessSingleton;
     }
-    
+
+    public void startListening() throws JMSException, C3PROException {
+        if (this.connection==null) {
+            setUpConnection();
+            Session session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+            MessageConsumer consumer = session.createConsumer(session.createQueue(AppConfig.getProp(AppConfig.AWS_SQS_NAME)));
+            SQSListener listener = new SQSListener();
+            consumer.setMessageListener(listener);
+            connection.start();
+        }
+    }
+
+    public void stopListening() throws JMSException {
+        if (this.connection!=null) {
+            this.connection.close();
+            this.connection = null;
+        }
+    }
+
     private void setUpConnection() throws C3PROException, JMSException {
     	Region region = Region.getRegion(Regions.fromName(AppConfig.getProp(AppConfig.AWS_SQS_REGION)));
-    	AWSCredentials credentials = null;
+    	AWSCredentialsProvider credentials = null;
         try {
             System.setProperty("aws.profile", AppConfig.getProp(AppConfig.AWS_SQS_PROFILE));
-            credentials = new ProfileCredentialsProvider().getCredentials();
+            credentials = new ProfileCredentialsProvider();
+            credentials.getCredentials();
         } catch (Exception e) {
             throw new C3PROException(
                     "Cannot load the credentials from the credential profiles file. " +
                             "Please make sure that the credentials file is at the correct " +
-                            "location (~/.aws/credentials), and is in valid format.",
+                            "location (~/.aws/credentials), and is in a valid format.",
                     e);
         }
     	SQSConnectionFactory connectionFactory = 
                 SQSConnectionFactory.builder()
                     .withRegion(region)
-                    .withAWSCredentialsProvider((AWSCredentialsProvider) credentials)
+                    .withAWSCredentialsProvider(credentials)
                     .build();
-    	SQSConnection connection = connectionFactory.createConnection();
+    	this.connection = connectionFactory.createConnection();
     	
     }
 }

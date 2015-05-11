@@ -17,9 +17,4 @@
   <javaee:security-role>
     <javaee:role-name>RestClient</javaee:role-name>
   </javaee:security-role>
-  <javaee:servlet>
-    <javaee:servlet-name>Main</javaee:servlet-name>
-    <javaee:servlet-class>org.bch.c3pro.consumer.servlet.Main</javaee:servlet-class>
-    <javaee:load-on-startup>1</javaee:load-on-startup>
-  </javaee:servlet>
 </web-app>

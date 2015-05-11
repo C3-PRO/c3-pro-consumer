@@ -26,14 +26,14 @@ public class AppConfig {
 
     // The key posted in the metadata part of the message to SQS. The value will contain the ncrypted symetric key
     // to decrypt the message
-    public static String SECURITY_METADATAKEY =     "app.security.metadatakey";
+    public static String SECURITY_METADATAKEY =         "app.security.metadatakey";
 
-    public static String SECURITY_PRIVATEKEY_ALG =   "app.security.privatekey.algorithm";
+    public static String SECURITY_PRIVATEKEY_ALG =      "app.security.privatekey.algorithm";
     public static String SECURITY_PRIVATEKEY_BASEALG =   "app.security.privatekey.basealgorithm";
     public static String SECURITY_PRIVATEKEY_FILE = 	"app.security.privatekey.file";
     public static String SECURITY_SECRETKEY_BASEALG = 	"app.security.secretkey.basealgorithm";
     public static String SECURITY_SECRETKEY_ALG = 		"app.security.secretkey.algorithm";
-    
+    public static String SECURITY_PRIVATEKEY_SIZE =     "app.security.secretkey.size";
     public static String UTF = "UTF-8";
     // Whether we encrypt the messages when sent to the queue; yes - no
     public static String SECURITY_ENCRYPTION_ENABLED = "app.security.encryption.enabled";

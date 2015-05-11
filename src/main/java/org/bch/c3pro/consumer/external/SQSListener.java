@@ -4,11 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.GeneralSecurityException;
-import java.security.KeyFactory;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
+import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
@@ -17,6 +13,9 @@ import java.util.logging.Logger;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
@@ -34,22 +33,26 @@ public class SQSListener implements MessageListener{
 	public void onMessage(Message messageWrapper) {
 		try {
 			TextMessage txtMessage = ( TextMessage ) messageWrapper;
-	        System.out.println( "\t" + txtMessage.getText() );
+            log.info("1111111111111");
+	        //System.out.println( "\t" + txtMessage.getText() );
 	        // Get the body message 
 			byte [] messageEnc = Base64.decodeBase64(txtMessage.getText());
-			
+            log.info("2222222222222");
 			// Get the symetric key as metadata
 			String symKeyBase64 = messageWrapper.getStringProperty(AppConfig.getProp(AppConfig.SECURITY_METADATAKEY));
-			
+            log.info("33333333333333");
 			// We decrypt the secret key of the message using the private key
 			byte [] secretKeyEnc = Base64.decodeBase64(symKeyBase64);
+            log.info("44444444444444");
 			byte [] secretKey = decryptSecretKey(secretKeyEnc);
-			
-			// We dcrypt the message using the secret key
+            log.info("55555555555555");
+			// We decrypt the message using the secret key
 			byte [] message = decryptMessage(messageEnc, secretKey);
-			
+            log.info("66666666666666");
 			String messageString = new String(message, AppConfig.UTF);
+            log.info("77777777777777");
 			saveMessage(messageString);
+            log.info("88888888888888");
 			messageWrapper.acknowledge();
 			
 		} catch (JMSException e) {
@@ -74,12 +77,15 @@ public class SQSListener implements MessageListener{
 	}
 
 	private byte [] decryptMessage(byte [] messageEnc, byte[] secretKeyBytes) throws GeneralSecurityException, BadPaddingException, C3PROException {
-		KeyFactory kf = KeyFactory.getInstance(AppConfig.getProp(AppConfig.SECURITY_SECRETKEY_BASEALG));
-		PKCS8EncodedKeySpec privateSpec = new PKCS8EncodedKeySpec(secretKeyBytes);
-		PrivateKey secretKey = kf.generatePrivate(privateSpec);
+        SecretKeySpec secretKeySpec = new SecretKeySpec(secretKeyBytes, AppConfig.getProp(AppConfig.SECURITY_SECRETKEY_BASEALG));
+		//KeyFactory kf = KeyFactory.getInstance(AppConfig.getProp(AppConfig.SECURITY_SECRETKEY_BASEALG));
+		//PKCS8EncodedKeySpec privateSpec = new PKCS8EncodedKeySpec(secretKeyBytes);
+		//PrivateKey secretKey = kf.generatePrivate(privateSpec);
+        int size = Integer.parseInt(AppConfig.getProp(AppConfig.SECURITY_PRIVATEKEY_SIZE));
+        SecretKey secretKey = secretKeySpec;
 		Cipher cipher = null;
-		cipher = Cipher.getInstance(AppConfig.getProp(AppConfig.SECURITY_PRIVATEKEY_ALG));
-        cipher.init(Cipher.DECRYPT_MODE, secretKey);
+		cipher = Cipher.getInstance(AppConfig.getProp(AppConfig.SECURITY_SECRETKEY_ALG));
+        cipher.init(Cipher.DECRYPT_MODE, secretKey,  new IvParameterSpec(new byte[size]));
         return cipher.doFinal(messageEnc);
         
 	}
@@ -94,6 +100,8 @@ public class SQSListener implements MessageListener{
         } catch (Exception e) {
             throw new C3PROException(e.getMessage(), e);
         }
+        //byte [] outReal = new byte[16];
+        //System.arraycopy(out,0,outReal,0,16);
         return out;
 	}
 	
