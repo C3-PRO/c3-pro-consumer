@@ -1,6 +1,7 @@
 package org.bch.c3pro.consumer.external;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -8,7 +9,7 @@ import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.logging.Logger;
+import java.util.UUID;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -16,19 +17,35 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.enterprise.inject.Default;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.TextMessage;
+import javax.persistence.EntityManager;
+import javax.transaction.UserTransaction;
 
 import org.apache.commons.codec.binary.Base64;
 import org.bch.c3pro.consumer.config.AppConfig;
 import org.bch.c3pro.consumer.exception.C3PROException;
+import org.bch.c3pro.consumer.model.Resource;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
-public class SQSListener implements MessageListener{
+@Default
+//@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+public class SQSListener implements MessageListener, Serializable {
 	private PrivateKey privateKey = null;
-	
-	Logger log = Logger.getAnonymousLogger();
+	private EntityManager em = null;
+
+	Logger log = LoggerFactory.getLogger(SQSListener.class);
+
+    @javax.annotation.Resource
+    UserTransaction tx;
+
 	@Override
 	public void onMessage(Message messageWrapper) {
 		try {
@@ -38,6 +55,8 @@ public class SQSListener implements MessageListener{
 			byte [] messageEnc = Base64.decodeBase64(txtMessage.getText());
 			// Get the symetric key as metadata
 			String symKeyBase64 = messageWrapper.getStringProperty(AppConfig.getProp(AppConfig.SECURITY_METADATAKEY));
+            saveRawMessage(null, txtMessage.getText(), symKeyBase64 );
+
 			// We decrypt the secret key of the message using the private key
 			byte [] secretKeyEnc = Base64.decodeBase64(symKeyBase64);
 			byte [] secretKey = decryptSecretKey(secretKeyEnc);
@@ -46,27 +65,61 @@ public class SQSListener implements MessageListener{
 			String messageString = new String(message, AppConfig.UTF);
 			saveMessage(messageString);
 			messageWrapper.acknowledge();
-			
 		} catch (JMSException e) {
-			log.severe("JMSException Error processing message from SQS:" + e.getMessage());
+			log.error("JMSException Error processing message from SQS:" + e.getMessage());
 		} catch (C3PROException e) {
-			log.severe("C3PROException Error processing message from SQS:" + e.getMessage());
+			log.error("C3PROException Error processing message from SQS:" + e.getMessage());
 		} catch (IOException e) {
-			log.severe("IOException error processing message from SQS:" + e.getMessage());
+			log.error("IOException error processing message from SQS:" + e.getMessage());
 		} catch (InvalidKeySpecException e) {
-			log.severe("InvalidKeySpecException error processing message from SQS:" + e.getMessage());
+			log.error("InvalidKeySpecException error processing message from SQS:" + e.getMessage());
 		} catch (NoSuchAlgorithmException e) {
-			log.severe("NoSuchAlgorithmException error processing message from SQS:" + e.getMessage());
+			log.error("NoSuchAlgorithmException error processing message from SQS:" + e.getMessage());
 		} catch (BadPaddingException e) {
-			log.severe("BadPaddingException error processing message from SQS:" + e.getMessage());
+			log.error("BadPaddingException error processing message from SQS:" + e.getMessage());
 		} catch (GeneralSecurityException e) {
-			log.severe("GeneralSecurityException error processing message from SQS:" + e.getMessage());
+			log.error("GeneralSecurityException error processing message from SQS:" + e.getMessage());
 		}
 	}
 	
-	protected void saveMessage(String messageString) {
-		System.out.println(messageString);
+
+    protected void saveMessage(String messageString) {
+        log.info("Resource Processed");
+		//System.out.println(messageString);
 	}
+
+    //@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    protected void saveRawMessage(String uuid, String message, String key) throws C3PROException {
+        String newUUID = uuid;
+        if (this.em == null) {
+            log.warn("EntityManager is null. The raw message will not be stored.");
+        }
+        if (uuid == null) {
+            newUUID = UUID.randomUUID().toString();
+        }
+        Resource res = new Resource();
+        res.setUUID(newUUID);
+        res.setJson(message);
+        res.setKey(key);
+        try {
+            tx.begin();
+            em.persist(res);
+            em.flush();
+            tx.commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+            try {
+                tx.rollback();
+            } catch (Exception ee) {
+                e.printStackTrace();
+            }
+            throw new C3PROException("Error storing raw data: " + e.getMessage(), e);
+        }
+    }
+
+    public void setEntityManager(EntityManager em) {
+        this.em = em;
+    }
 
 	private byte [] decryptMessage(byte [] messageEnc, byte[] secretKeyBytes) throws GeneralSecurityException, BadPaddingException, C3PROException {
         SecretKeySpec secretKeySpec = new SecretKeySpec(secretKeyBytes, AppConfig.getProp(AppConfig.SECURITY_SECRETKEY_BASEALG));

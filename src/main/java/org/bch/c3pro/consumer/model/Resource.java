@@ -1,11 +1,9 @@
 package org.bch.c3pro.consumer.model;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Lob;
+import javax.persistence.*;
 
 @Entity
+@Table(name="resource_table")
 public class Resource {
 private static final long serialVersionUID = 1L;
 	

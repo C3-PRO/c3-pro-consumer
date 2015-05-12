@@ -5,14 +5,12 @@
    xsi:schemaLocation="
         http://java.sun.com/xml/ns/persistence
         http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
-   <!--persistence-unit name="resource"-->
-      <!-- If you are running in a production environment, add a managed 
-         data source, the example data source is just for proofs of concept! -->
-      <!--jta-data-source>java:jboss/datasources/resource</jta-data-source-->
-      <!--properties-->
+   <persistence-unit name="fhir-resource">
+      <jta-data-source>java:jboss/datasources/c3proDS</jta-data-source>
+      <properties>
          <!-- Properties for Hibernate -->
          <!-- property name="hibernate.hbm2ddl.auto" value="create-drop" /-->
-         <!--property name="hibernate.show_sql" value="yes" /-->
-      <!--/properties-->
-   <!--/persistence-unit-->
+         <property name="hibernate.show_sql" value="yes"/>
+      </properties>
+   </persistence-unit>
 </persistence>

@@ -14,6 +14,8 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClient;
 import com.amazonaws.services.sqs.model.SendMessageRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
@@ -22,12 +24,14 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.jms.Session;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
 
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.PublicKey;
 import java.security.SecureRandom;
-import java.util.logging.Logger;
 
 /**
  * Created by CH176656 on 5/1/2015.
@@ -37,7 +41,8 @@ public class SQSAccess {
     private static SQSAccess sqsAccessSingleton = null;
 
 	private SQSConnection connection;
-    Logger log = Logger.getAnonymousLogger();
+
+    Logger log = LoggerFactory.getLogger(SQSAccess.class);
 
     // just to defeat instantiation
     protected SQSAccess() {}
