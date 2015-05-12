@@ -33,26 +33,18 @@ public class SQSListener implements MessageListener{
 	public void onMessage(Message messageWrapper) {
 		try {
 			TextMessage txtMessage = ( TextMessage ) messageWrapper;
-            log.info("1111111111111");
 	        //System.out.println( "\t" + txtMessage.getText() );
 	        // Get the body message 
 			byte [] messageEnc = Base64.decodeBase64(txtMessage.getText());
-            log.info("2222222222222");
 			// Get the symetric key as metadata
 			String symKeyBase64 = messageWrapper.getStringProperty(AppConfig.getProp(AppConfig.SECURITY_METADATAKEY));
-            log.info("33333333333333");
 			// We decrypt the secret key of the message using the private key
 			byte [] secretKeyEnc = Base64.decodeBase64(symKeyBase64);
-            log.info("44444444444444");
 			byte [] secretKey = decryptSecretKey(secretKeyEnc);
-            log.info("55555555555555");
 			// We decrypt the message using the secret key
 			byte [] message = decryptMessage(messageEnc, secretKey);
-            log.info("66666666666666");
 			String messageString = new String(message, AppConfig.UTF);
-            log.info("77777777777777");
 			saveMessage(messageString);
-            log.info("88888888888888");
 			messageWrapper.acknowledge();
 			
 		} catch (JMSException e) {
@@ -72,7 +64,7 @@ public class SQSListener implements MessageListener{
 		}
 	}
 	
-	private void saveMessage(String messageString) {
+	protected void saveMessage(String messageString) {
 		System.out.println(messageString);
 	}
 

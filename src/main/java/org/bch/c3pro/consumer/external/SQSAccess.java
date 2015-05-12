@@ -60,6 +60,17 @@ public class SQSAccess {
         }
     }
 
+    // Very useful for testing purposes and for a more general approach
+    public void startListening(SQSListener listener) throws JMSException, C3PROException {
+        if (this.connection==null) {
+            setUpConnection();
+            Session session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+            MessageConsumer consumer = session.createConsumer(session.createQueue(AppConfig.getProp(AppConfig.AWS_SQS_NAME)));
+            consumer.setMessageListener(listener);
+            connection.start();
+        }
+    }
+
     public void stopListening() throws JMSException {
         if (this.connection!=null) {
             this.connection.close();

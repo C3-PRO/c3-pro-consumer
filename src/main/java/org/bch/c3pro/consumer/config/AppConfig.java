@@ -34,9 +34,12 @@ public class AppConfig {
     public static String SECURITY_SECRETKEY_BASEALG = 	"app.security.secretkey.basealgorithm";
     public static String SECURITY_SECRETKEY_ALG = 		"app.security.secretkey.algorithm";
     public static String SECURITY_PRIVATEKEY_SIZE =     "app.security.secretkey.size";
+
     public static String UTF = "UTF-8";
     // Whether we encrypt the messages when sent to the queue; yes - no
     public static String SECURITY_ENCRYPTION_ENABLED = "app.security.encryption.enabled";
+
+    public static int HTTP_TRANSPORT_BUFFER_SIZE = 500;
     private static Properties prop = new Properties();
     /**
      * Upload the configuration from config.properties files
