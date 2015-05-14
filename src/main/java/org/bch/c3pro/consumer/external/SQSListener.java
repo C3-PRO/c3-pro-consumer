@@ -50,9 +50,10 @@ public class SQSListener implements MessageListener, Serializable {
 	public void onMessage(Message messageWrapper) {
 		try {
 			TextMessage txtMessage = ( TextMessage ) messageWrapper;
-	        //System.out.println( "\t" + txtMessage.getText() );
+
 	        // Get the body message 
 			byte [] messageEnc = Base64.decodeBase64(txtMessage.getText());
+
 			// Get the symetric key as metadata
 			String symKeyBase64 = messageWrapper.getStringProperty(AppConfig.getProp(AppConfig.SECURITY_METADATAKEY));
             saveRawMessage(null, txtMessage.getText(), symKeyBase64 );
@@ -60,10 +61,13 @@ public class SQSListener implements MessageListener, Serializable {
 			// We decrypt the secret key of the message using the private key
 			byte [] secretKeyEnc = Base64.decodeBase64(symKeyBase64);
 			byte [] secretKey = decryptSecretKey(secretKeyEnc);
+
 			// We decrypt the message using the secret key
 			byte [] message = decryptMessage(messageEnc, secretKey);
 			String messageString = new String(message, AppConfig.UTF);
 			saveMessage(messageString);
+
+            // We send acknowledge notification
 			messageWrapper.acknowledge();
 		} catch (JMSException e) {
 			log.error("JMSException Error processing message from SQS:" + e.getMessage());
@@ -85,10 +89,8 @@ public class SQSListener implements MessageListener, Serializable {
 
     protected void saveMessage(String messageString) {
         log.info("Resource Processed");
-		//System.out.println(messageString);
 	}
 
-    //@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     protected void saveRawMessage(String uuid, String message, String key) throws C3PROException {
         String newUUID = uuid;
         if (this.em == null) {
@@ -121,11 +123,10 @@ public class SQSListener implements MessageListener, Serializable {
         this.em = em;
     }
 
-	private byte [] decryptMessage(byte [] messageEnc, byte[] secretKeyBytes) throws GeneralSecurityException, BadPaddingException, C3PROException {
-        SecretKeySpec secretKeySpec = new SecretKeySpec(secretKeyBytes, AppConfig.getProp(AppConfig.SECURITY_SECRETKEY_BASEALG));
-		//KeyFactory kf = KeyFactory.getInstance(AppConfig.getProp(AppConfig.SECURITY_SECRETKEY_BASEALG));
-		//PKCS8EncodedKeySpec privateSpec = new PKCS8EncodedKeySpec(secretKeyBytes);
-		//PrivateKey secretKey = kf.generatePrivate(privateSpec);
+	private byte [] decryptMessage(byte [] messageEnc, byte[] secretKeyBytes) throws GeneralSecurityException,
+            C3PROException {
+        SecretKeySpec secretKeySpec = new SecretKeySpec(secretKeyBytes,
+                AppConfig.getProp(AppConfig.SECURITY_SECRETKEY_BASEALG));
         int size = Integer.parseInt(AppConfig.getProp(AppConfig.SECURITY_PRIVATEKEY_SIZE));
         SecretKey secretKey = secretKeySpec;
 		Cipher cipher = null;
@@ -134,7 +135,8 @@ public class SQSListener implements MessageListener, Serializable {
         return cipher.doFinal(messageEnc);
         
 	}
-	private byte [] decryptSecretKey(byte [] symKeyEnc) throws C3PROException, IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+	private byte [] decryptSecretKey(byte [] symKeyEnc) throws C3PROException, IOException, NoSuchAlgorithmException,
+            InvalidKeySpecException {
 		loadPrivateKey();
 		Cipher cipher = null;
         byte [] out = null;
@@ -145,12 +147,12 @@ public class SQSListener implements MessageListener, Serializable {
         } catch (Exception e) {
             throw new C3PROException(e.getMessage(), e);
         }
-        //byte [] outReal = new byte[16];
-        //System.arraycopy(out,0,outReal,0,16);
+
         return out;
 	}
 	
-	private void loadPrivateKey() throws C3PROException, IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+	private void loadPrivateKey() throws C3PROException, IOException, NoSuchAlgorithmException,
+            InvalidKeySpecException {
 		// Get the private rsa key to decrypt the symetric key
 		if (this.privateKey == null) {
 			Path path = Paths.get(AppConfig.getProp(AppConfig.SECURITY_PRIVATEKEY_FILE));

@@ -58,7 +58,8 @@ public class SQSAccess {
         if (this.connection==null) {
             setUpConnection();
             Session session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-            MessageConsumer consumer = session.createConsumer(session.createQueue(AppConfig.getProp(AppConfig.AWS_SQS_NAME)));
+            MessageConsumer consumer = session.createConsumer(
+                    session.createQueue(AppConfig.getProp(AppConfig.AWS_SQS_NAME)));
             SQSListener listener = new SQSListener();
             consumer.setMessageListener(listener);
             connection.start();
@@ -70,7 +71,8 @@ public class SQSAccess {
         if (this.connection==null) {
             setUpConnection();
             Session session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
-            MessageConsumer consumer = session.createConsumer(session.createQueue(AppConfig.getProp(AppConfig.AWS_SQS_NAME)));
+            MessageConsumer consumer = session.createConsumer(session.createQueue(
+                    AppConfig.getProp(AppConfig.AWS_SQS_NAME)));
             consumer.setMessageListener(listener);
             connection.start();
         }
