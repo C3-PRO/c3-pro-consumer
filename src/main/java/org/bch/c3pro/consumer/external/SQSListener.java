@@ -8,18 +8,13 @@ import java.nio.file.Paths;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.X509EncodedKeySpec;
 import java.util.UUID;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 import javax.enterprise.inject.Default;
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -36,7 +31,6 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 
 @Default
-//@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 public class SQSListener implements MessageListener, Serializable {
 	private PrivateKey privateKey = null;
 	private EntityManager em = null;

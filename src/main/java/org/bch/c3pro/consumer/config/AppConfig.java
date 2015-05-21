@@ -29,15 +29,18 @@ public class AppConfig {
     public static String SECURITY_METADATAKEY =         "app.security.metadatakey";
 
     public static String SECURITY_PRIVATEKEY_ALG =      "app.security.privatekey.algorithm";
-    public static String SECURITY_PRIVATEKEY_BASEALG =   "app.security.privatekey.basealgorithm";
+    public static String SECURITY_PRIVATEKEY_BASEALG =  "app.security.privatekey.basealgorithm";
     public static String SECURITY_PRIVATEKEY_FILE = 	"app.security.privatekey.file";
     public static String SECURITY_SECRETKEY_BASEALG = 	"app.security.secretkey.basealgorithm";
     public static String SECURITY_SECRETKEY_ALG = 		"app.security.secretkey.algorithm";
     public static String SECURITY_PRIVATEKEY_SIZE =     "app.security.secretkey.size";
 
+    public static String C3PRO_SERVER_HOST =            "app.c3pro.server.host";
+    public static String C3PRO_SERVER_PORT =            "app.c3pro.server.port";
+    public static String C3PRO_SERVER_TRANS =           "app.c3pro.server.transport";
+    public static String C3PRO_SERVER_CREDENTIALS=      "app.authfile.c3pro.server";
+
     public static String UTF = "UTF-8";
-    // Whether we encrypt the messages when sent to the queue; yes - no
-    public static String SECURITY_ENCRYPTION_ENABLED = "app.security.encryption.enabled";
 
     public static int HTTP_TRANSPORT_BUFFER_SIZE = 500;
     private static Properties prop = new Properties();
