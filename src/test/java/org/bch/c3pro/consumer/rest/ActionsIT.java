@@ -90,8 +90,8 @@ public class ActionsIT {
         SQSAccess sqsAccess = SQSAccess.getInstance();
         SQSListener listener = new SQSListenerTest();
         sqsAccess.startListening(listener);
-        System.out.println("Waiting for 4 seconds to let the consumer process the message");
-        Thread.sleep(4000);
+        System.out.println("Waiting for 7 seconds to let the consumer process the message");
+        Thread.sleep(7000);
         if (sb.length()==0) {
             fail("Timeout: waiting for 4 seconds to read from queue");
         } else {
