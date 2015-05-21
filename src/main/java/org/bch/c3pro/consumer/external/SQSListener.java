@@ -117,7 +117,7 @@ public class SQSListener implements MessageListener, Serializable {
         this.em = em;
     }
 
-	private byte [] decryptMessage(byte [] messageEnc, byte[] secretKeyBytes) throws GeneralSecurityException,
+	private static byte [] decryptMessage(byte [] messageEnc, byte[] secretKeyBytes) throws GeneralSecurityException,
             C3PROException {
         SecretKeySpec secretKeySpec = new SecretKeySpec(secretKeyBytes,
                 AppConfig.getProp(AppConfig.SECURITY_SECRETKEY_BASEALG));

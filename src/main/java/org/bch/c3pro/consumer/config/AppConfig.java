@@ -39,6 +39,7 @@ public class AppConfig {
     public static String C3PRO_SERVER_PORT =            "app.c3pro.server.port";
     public static String C3PRO_SERVER_TRANS =           "app.c3pro.server.transport";
     public static String C3PRO_SERVER_CREDENTIALS=      "app.authfile.c3pro.server";
+    public static String C3PRO_CONSUMER_DATASOURCE=     "app.c3pro.consumer.datasource";
 
     public static String UTF = "UTF-8";
 
