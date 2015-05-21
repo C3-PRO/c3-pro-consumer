@@ -183,6 +183,7 @@ public class ActionsIT {
         } else {
             String infoDB = AppConfig.getAuthCredentials(AppConfig.C3PRO_CONSUMER_DATASOURCE);
             String [] infoDBParse = infoDB.split(",");
+            Class.forName("oracle.jdbc.driver.OracleDriver");
             Connection conn = DriverManager.getConnection(infoDBParse[0], infoDBParse[1], infoDBParse[2]);
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery("Select json, key from resource_table");
