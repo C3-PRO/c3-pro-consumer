@@ -15,6 +15,7 @@ import org.junit.Test;
 import javax.naming.InitialContext;
 import java.io.*;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
@@ -180,9 +181,9 @@ public class ActionsIT {
         if (sb.length()==0) {
             fail("Timeout: waiting for 4 seconds to read from queue");
         } else {
-            InitialContext ctx = new InitialContext();
-            DataSource ds = (DataSource) ctx.lookup(AppConfig.getProp(AppConfig.C3PRO_CONSUMER_DATASOURCE));
-            Connection conn = ds.getConnection();
+            String infoDB = AppConfig.getAuthCredentials(AppConfig.C3PRO_CONSUMER_DATASOURCE);
+            String [] infoDBParse = infoDB.split(",");
+            Connection conn = DriverManager.getConnection(infoDBParse[0], infoDBParse[1], infoDBParse[2]);
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery("Select json, key from resource_table");
             if (!rs.next()) fail();
