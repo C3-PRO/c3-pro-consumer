@@ -15,6 +15,7 @@ The system uses the following external resources:
 
 * **SQS queue**: A queue deployed in AWS to consume from. This queue must be configured and populated as described in https://bitbucket.org/ipinyol/c3pro-server/overview.
 * **Oracle DB**: An oracle schema is needed to store the raw data from the SQS. Ideally, this schema should be located in the intranet of an organization.
+* **I2B2 instance*: *TODO* (NOT IMPLEMENTED YET)
 
 The configuration of the DB and the access to SQS is explained in the below sections.
 
@@ -89,3 +90,37 @@ In PROD:
 
 These commands take the resource files located in *src/main/resources/qa* or *src/main/resources/prod* respectively, and place them as the resource files of the deployment.
 
+## AWS SDK credentials ##
+
+The system uses the Java AWS SDK provided by Amazon. The SDK will be installed automatically since it is a maven dependency. However, it grabs the credentials to access the S3 bucket and SQS from a file that should be located here:
+
+    $HOME/.aws/credentials
+
+The content of the file should be something like:
+
+    [sqsqueue]
+    aws_access_key_id={{access_key_to_SQS_and_S3}}
+    aws_secret_access_key={{secret}}
+
+To obtain access keys and secrets from AWS, visit http://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSGettingStartedGuide/AWSCredentials.html. We suggest to create a user in AWS-IAM with only permissions to access SQS, and generate the access key and secret for this user.
+
+## Generating and installing public-private keys ##
+
+The information retrieved from the SQS is encrypted using a symmetric key. Such symmetric key is send via metadata of the elements and it's also encrypted using a public key. The C3-PRO-Consumer uses its private key to decrypt the symmetric key and finally decrypt the fhir resource. 
+
+To generate a key pair, execute the following command:
+
+    $C3PRO_CONSUMER_HOME/src/main/scripts/key-generator.sh
+
+The following files will be generated:
+
+    public-c3pro.der
+    private-c3pro.der
+
+*public-c3pro.der* is the public key file and must be uploaded to the S3 bucket used by C3-PRO-Server. See https://bitbucket.org/ipinyol/c3pro-server/overview for details
+
+*private-c3pro.der* is the private key file and, under any circumstance, can be shared or distributed. It should be backed up in a secure device and install it in the following directory:
+
+    ~/.c3pro/private-c3pro.der
+
+If this private key is lost, it won't be possible to recuperate the messages in the queue. 
