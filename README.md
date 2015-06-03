@@ -15,7 +15,7 @@ The system uses the following external resources:
 
 * **SQS queue**: A queue deployed in AWS to consume from. This queue must be configured and populated as described in https://bitbucket.org/ipinyol/c3pro-server/overview.
 * **Oracle DB**: An oracle schema is needed to store the raw data from the SQS. Ideally, this schema should be located in the intranet of an organization.
-* **I2B2 instance*: *TODO* (NOT IMPLEMENTED YET)
+* **I2B2 instance**: *TODO* (NOT IMPLEMENTED YET)
 
 The configuration of the DB and the access to SQS is explained in the below sections.
 
@@ -123,4 +123,4 @@ The following files will be generated:
 
     ~/.c3pro/private-c3pro.der
 
-If this private key is lost, it won't be possible to recuperate the messages in the queue. 
+If this private key is lost, it won't be possible to recuperate the messages in the queue.
