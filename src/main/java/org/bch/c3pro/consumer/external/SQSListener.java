@@ -82,7 +82,8 @@ public class SQSListener implements MessageListener, Serializable {
 	
 
     protected void saveMessage(String messageString) {
-        log.info("Resource Processed");
+        log.info("Resource Processed:");
+        log.info(messageString);
 	}
 
     protected void saveRawMessage(String uuid, String message, String key) throws C3PROException {
