@@ -8,6 +8,8 @@ import java.nio.file.Paths;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.crypto.BadPaddingException;
@@ -32,7 +34,8 @@ import org.slf4j.Logger;
 
 @Default
 public class SQSListener implements MessageListener, Serializable {
-	private PrivateKey privateKey = null;
+	private Map<String, PrivateKey> privateKeyMap = new HashMap<>();
+
 	private EntityManager em = null;
 
 	Logger log = LoggerFactory.getLogger(SQSListener.class);
@@ -50,11 +53,12 @@ public class SQSListener implements MessageListener, Serializable {
 
 			// Get the symetric key as metadata
 			String symKeyBase64 = messageWrapper.getStringProperty(AppConfig.getProp(AppConfig.SECURITY_METADATAKEY));
-            saveRawMessage(null, txtMessage.getText(), symKeyBase64 );
+            String publicKeyId = messageWrapper.getStringProperty(AppConfig.getProp(AppConfig.SECURITY_METADATAKEY_ID));
+            saveRawMessage(null, txtMessage.getText(), symKeyBase64, publicKeyId );
 
 			// We decrypt the secret key of the message using the private key
 			byte [] secretKeyEnc = Base64.decodeBase64(symKeyBase64);
-			byte [] secretKey = decryptSecretKey(secretKeyEnc);
+			byte [] secretKey = decryptSecretKey(secretKeyEnc, publicKeyId);
 
 			// We decrypt the message using the secret key
 			byte [] message = decryptMessage(messageEnc, secretKey);
@@ -86,7 +90,7 @@ public class SQSListener implements MessageListener, Serializable {
         log.info(messageString);
 	}
 
-    protected void saveRawMessage(String uuid, String message, String key) throws C3PROException {
+    protected void saveRawMessage(String uuid, String message, String key, String keyId) throws C3PROException {
         String newUUID = uuid;
         if (this.em == null) {
             log.warn("EntityManager is null. The raw message will not be stored.");
@@ -98,6 +102,7 @@ public class SQSListener implements MessageListener, Serializable {
         res.setUUID(newUUID);
         res.setJson(message);
         res.setKey(key);
+        res.setKeyId(keyId);
         try {
             tx.begin();
             em.persist(res);
@@ -130,14 +135,14 @@ public class SQSListener implements MessageListener, Serializable {
         return cipher.doFinal(messageEnc);
         
 	}
-	private byte [] decryptSecretKey(byte [] symKeyEnc) throws C3PROException, IOException, NoSuchAlgorithmException,
+	private byte [] decryptSecretKey(byte [] symKeyEnc, String keyId) throws C3PROException, IOException, NoSuchAlgorithmException,
             InvalidKeySpecException {
-		loadPrivateKey();
+		PrivateKey privateKey = loadPrivateKey(keyId);
 		Cipher cipher = null;
         byte [] out = null;
         try {
             cipher = Cipher.getInstance(AppConfig.getProp(AppConfig.SECURITY_PRIVATEKEY_ALG));
-            cipher.init(Cipher.DECRYPT_MODE, this.privateKey);
+            cipher.init(Cipher.DECRYPT_MODE, privateKey);
             out = cipher.doFinal(symKeyEnc);
         } catch (Exception e) {
             throw new C3PROException(e.getMessage(), e);
@@ -146,15 +151,18 @@ public class SQSListener implements MessageListener, Serializable {
         return out;
 	}
 	
-	private void loadPrivateKey() throws C3PROException, IOException, NoSuchAlgorithmException,
+	private PrivateKey loadPrivateKey(String keyId) throws C3PROException, IOException, NoSuchAlgorithmException,
             InvalidKeySpecException {
 		// Get the private rsa key to decrypt the symetric key
-		if (this.privateKey == null) {
-			Path path = Paths.get(AppConfig.getProp(AppConfig.SECURITY_PRIVATEKEY_FILE));
-			byte[] privateKeyBin = Files.readAllBytes(path);
-			PKCS8EncodedKeySpec privateSpec = new PKCS8EncodedKeySpec(privateKeyBin);
-	        KeyFactory keyFactory = KeyFactory.getInstance(AppConfig.getProp(AppConfig.SECURITY_PRIVATEKEY_BASEALG));
-	        this.privateKey = keyFactory.generatePrivate(privateSpec);
-		}
+        if (!this.privateKeyMap.containsKey(keyId)) {
+            String fullPath = AppConfig.getProp(AppConfig.SECURITY_PRIVATEKEY_BASEPATH);
+            fullPath = fullPath + keyId + "/" + AppConfig.getProp(AppConfig.SECURITY_PRIVATEKEY_FILENAME);
+            Path path = Paths.get(fullPath);
+            byte[] privateKeyBin = Files.readAllBytes(path);
+            PKCS8EncodedKeySpec privateSpec = new PKCS8EncodedKeySpec(privateKeyBin);
+            KeyFactory keyFactory = KeyFactory.getInstance(AppConfig.getProp(AppConfig.SECURITY_PRIVATEKEY_BASEALG));
+            this.privateKeyMap.put(keyId,keyFactory.generatePrivate(privateSpec));
+        }
+		return this.privateKeyMap.get(keyId);
 	}
 }

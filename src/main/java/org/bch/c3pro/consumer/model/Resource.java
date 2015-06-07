@@ -17,6 +17,9 @@ private static final long serialVersionUID = 1L;
 	@Lob
 	private String key;
 
+    @Column(name = "key_id")
+    private String keyId;
+
 	public String getUUID() {
 		return UUID;
 	}
@@ -40,6 +43,14 @@ private static final long serialVersionUID = 1L;
 	public void setKey(String key) {
 		this.key = key;
 	}
+
+    public String getKeyId() {
+        return this.keyId;
+    }
+
+    public void setKeyId(String keyId) {
+        this.keyId = keyId;
+    }
 	
 	
 }
