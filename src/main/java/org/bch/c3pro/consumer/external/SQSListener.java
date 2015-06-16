@@ -56,6 +56,7 @@ public class SQSListener implements MessageListener, Serializable {
             String publicKeyId = messageWrapper.getStringProperty(AppConfig.getProp(AppConfig.SECURITY_METADATAKEY_ID));
             saveRawMessage(null, txtMessage.getText(), symKeyBase64, publicKeyId );
 
+            publicKeyId = publicKeyId.trim();
 			// We decrypt the secret key of the message using the private key
 			byte [] secretKeyEnc = Base64.decodeBase64(symKeyBase64);
 			byte [] secretKey = decryptSecretKey(secretKeyEnc, publicKeyId);
