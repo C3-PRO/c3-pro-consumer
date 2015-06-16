@@ -236,12 +236,12 @@ public class ActionsIT {
         }
 
         @Override
-        protected void saveRawMessage(String uuid, String message, String key) throws C3PROException {
+        protected void saveRawMessage(String uuid, String message, String key, String keyId) throws C3PROException {
             ActionsIT.json.append(message);
             ActionsIT.uuid.append(uuid);
             ActionsIT.key.append(key);
             if (this.withDB) {
-                super.saveRawMessage(uuid, message, key);
+                super.saveRawMessage(uuid, message, key, null);
             }
         }
     }
