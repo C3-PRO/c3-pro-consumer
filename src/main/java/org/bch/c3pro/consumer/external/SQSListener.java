@@ -68,18 +68,25 @@ public class SQSListener implements MessageListener, Serializable {
             // We send acknowledge notification
 			messageWrapper.acknowledge();
 		} catch (JMSException e) {
+            e.printStackTrace();
 			log.error("JMSException Error processing message from SQS:" + e.getMessage());
 		} catch (C3PROException e) {
+            e.printStackTrace();
 			log.error("C3PROException Error processing message from SQS:" + e.getMessage());
 		} catch (IOException e) {
+            e.printStackTrace();
 			log.error("IOException error processing message from SQS:" + e.getMessage());
 		} catch (InvalidKeySpecException e) {
+            e.printStackTrace();
 			log.error("InvalidKeySpecException error processing message from SQS:" + e.getMessage());
 		} catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
 			log.error("NoSuchAlgorithmException error processing message from SQS:" + e.getMessage());
 		} catch (BadPaddingException e) {
+            e.printStackTrace();
 			log.error("BadPaddingException error processing message from SQS:" + e.getMessage());
 		} catch (GeneralSecurityException e) {
+            e.printStackTrace();
 			log.error("GeneralSecurityException error processing message from SQS:" + e.getMessage());
 		}
 	}
