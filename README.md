@@ -1,6 +1,6 @@
 # C3-PRO-Consumer #
 
-C3-PRO-Consumer is a system that consumes from an AWS SQS queue and stores the raw elements in an oracle DB and exports the data into an i2b2 instance (https://www.i2b2.org/). The elements in the queue are FHIR resources pushed trough C3-PRO-Server (https://bitbucket.org/ipinyol/c3pro-server/overview).
+C3-PRO-Consumer is a system that consumes from an AWS SQS queue, stores the raw elements in an oracle DB and exports the data into an i2b2 instance (https://www.i2b2.org/). The elements in the queue are FHIR resources pushed trough C3-PRO-Server (https://bitbucket.org/ipinyol/c3pro-server/overview).
 
 The system servers the following rest methods to start and stop the consumption of elements in the queue:
 
