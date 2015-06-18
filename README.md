@@ -106,13 +106,23 @@ To obtain access keys and secrets from AWS, visit http://docs.aws.amazon.com/AWS
 
 ## Generating and installing public-private keys ##
 
-The information retrieved from the SQS is encrypted using a symmetric key. Such symmetric key is send via metadata of the elements and it's also encrypted using a public key. The C3-PRO-Consumer uses its private key to decrypt the symmetric key and finally decrypt the fhir resource. 
+The information retrieved from the SQS is encrypted using a symmetric key. Such symmetric key is sent via metadata of the elements inserted in the queue, and it's also encrypted using a public key. Also, the ID of the public key is sent as metadata. The C3-PRO-Consumer uses the corresponding private key to decrypt the symmetric key and finally decrypt the fhir resource. 
 
-To generate a key pair, execute the following command:
+To generate and install a new key pair follow the steps:
+
+**(1) Generate a new UUID** 
+This will be the new ID of the key
+
+**(2) Inform the server about the new ID** 
+In the corresponding S3 Bucket, upload a new text file containing the new UUID. See (https://bitbucket.org/ipinyol/c3pro-server/overview)
+
+**(3) Generate the public-private keys**
+
+Execute the following command:
 
     $C3PRO_CONSUMER_HOME/src/main/scripts/key-generator.sh
 
-The following files will be generated:
+These files will be generated:
 
     public-c3pro.der
     private-c3pro.der
@@ -121,6 +131,6 @@ The following files will be generated:
 
 *private-c3pro.der* is the private key file and, under any circumstance, can be shared or distributed. It should be backed up in a secure device and install it in the following directory:
 
-    ~/.c3pro/private-c3pro.der
+    ~/.c3pro/{{new UUID}}/private-c3pro.der
 
 If this private key is lost, it won't be possible to recuperate the messages in the queue.
