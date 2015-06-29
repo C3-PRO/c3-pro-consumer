@@ -84,18 +84,24 @@ public class Actions {
             JSONObject jsonObj = new JSONObject(json);
             String publicKeyId = jsonObj.getString("id");
             String symKey64 = jsonObj.getString("symetric_key");
-            String message64 = jsonObj.getString("message");
+            String message64 = null;
+            try {
+                message64 = jsonObj.getString("message");
+            } catch (Exception e){}
 
             byte [] secretKeyEnc = Base64.decode(symKey64);
-            byte [] messageEnc = Base64.decode(message64);
-
             SQSListener sqsListener = new SQSListener();
-
             byte [] secretKey = sqsListener.decryptSecretKey(secretKeyEnc, publicKeyId);
 
+            if (message64!= null) {
 
-            byte [] message = sqsListener.decryptMessage(messageEnc, secretKey);
-            messageString = new String(message, "UTF-8");
+                byte[] messageEnc = Base64.decode(message64);
+                byte[] message = sqsListener.decryptMessage(messageEnc, secretKey);
+                messageString = new String(message, "UTF-8");
+            } else {
+                messageString = new String(secretKey, "UTF-8");
+            }
+
 
         } catch (Exception e) {
             e.printStackTrace();
