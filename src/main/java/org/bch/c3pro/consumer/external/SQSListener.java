@@ -153,6 +153,7 @@ public class SQSListener implements MessageListener, Serializable {
             cipher.init(Cipher.DECRYPT_MODE, privateKey);
             out = cipher.doFinal(symKeyEnc);
         } catch (Exception e) {
+            e.printStackTrace();
             throw new C3PROException(e.getMessage(), e);
         }
 
