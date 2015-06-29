@@ -69,7 +69,7 @@ public class Actions {
      * json:
      * {
      *     "id":{{UUID of the key}},
-     *     "symetric_key": {{BASE64(key)}}
+     *     "symmetric_key": {{BASE64(key)}}
      *     "message":{{Encrypted message}}
      * }
      * @return
@@ -83,7 +83,7 @@ public class Actions {
         try {
             JSONObject jsonObj = new JSONObject(json);
             String publicKeyId = jsonObj.getString("id");
-            String symKey64 = jsonObj.getString("symetric_key");
+            String symKey64 = jsonObj.getString("symmetric_key");
             String message64 = null;
             try {
                 message64 = jsonObj.getString("message");
