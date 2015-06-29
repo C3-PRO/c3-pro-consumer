@@ -131,7 +131,7 @@ public class SQSListener implements MessageListener, Serializable {
         this.em = em;
     }
 
-	private static byte [] decryptMessage(byte [] messageEnc, byte[] secretKeyBytes) throws GeneralSecurityException,
+	public static byte [] decryptMessage(byte [] messageEnc, byte[] secretKeyBytes) throws GeneralSecurityException,
             C3PROException {
         SecretKeySpec secretKeySpec = new SecretKeySpec(secretKeyBytes,
                 AppConfig.getProp(AppConfig.SECURITY_SECRETKEY_BASEALG));
@@ -143,7 +143,7 @@ public class SQSListener implements MessageListener, Serializable {
         return cipher.doFinal(messageEnc);
         
 	}
-	private byte [] decryptSecretKey(byte [] symKeyEnc, String keyId) throws C3PROException, IOException, NoSuchAlgorithmException,
+	public byte [] decryptSecretKey(byte [] symKeyEnc, String keyId) throws C3PROException, IOException, NoSuchAlgorithmException,
             InvalidKeySpecException {
 		PrivateKey privateKey = loadPrivateKey(keyId);
 		Cipher cipher = null;
@@ -159,7 +159,7 @@ public class SQSListener implements MessageListener, Serializable {
         return out;
 	}
 	
-	private PrivateKey loadPrivateKey(String keyId) throws C3PROException, IOException, NoSuchAlgorithmException,
+	public PrivateKey loadPrivateKey(String keyId) throws C3PROException, IOException, NoSuchAlgorithmException,
             InvalidKeySpecException {
 		// Get the private rsa key to decrypt the symetric key
         if (!this.privateKeyMap.containsKey(keyId)) {
