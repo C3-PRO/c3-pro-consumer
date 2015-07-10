@@ -18,6 +18,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import javax.enterprise.inject.Default;
+import javax.inject.Inject;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
@@ -29,6 +30,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.bch.c3pro.consumer.config.AppConfig;
 import org.bch.c3pro.consumer.exception.C3PROException;
 import org.bch.c3pro.consumer.model.Resource;
+import org.bch.c3pro.consumer.util.Response;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 
@@ -42,6 +44,9 @@ public class SQSListener implements MessageListener, Serializable {
 
     @javax.annotation.Resource
     UserTransaction tx;
+
+    @Inject
+    protected I2B2FHIRCell fhirCell;
 
 	@Override
 	public void onMessage(Message messageWrapper) {
@@ -91,12 +96,26 @@ public class SQSListener implements MessageListener, Serializable {
 			log.error("GeneralSecurityException error processing message from SQS:" + e.getMessage());
 		}
 	}
-	
 
-    protected void saveMessage(String messageString) {
-        log.info("Resource Processed:");
-        log.info(messageString);
+    protected void saveMessage(String messageString) throws C3PROException {
+        if (isQuestionnaireAnswers(messageString)) {
+            log.info("Saving QA resource to i2b2");
+            try {
+                Response resp = fhirCell.postQuestionnaireAnswers(messageString);
+                int code = resp.getResponseCode();
+                log.info(""+code);
+                if (code>=400) throw new C3PROException("Error storing data into i2b2");
+            } catch (IOException e) {
+                e.printStackTrace();
+                throw new C3PROException(e.getMessage(), e);
+            }
+        }
 	}
+
+    private boolean isQuestionnaireAnswers(String msg) {
+        //TODO: check which kind of resources treat
+        return true;
+    }
 
     protected void saveRawMessage(String uuid, String message, String key, String keyId) throws C3PROException {
         String newUUID = uuid;

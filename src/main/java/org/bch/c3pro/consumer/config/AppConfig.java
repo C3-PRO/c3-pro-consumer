@@ -44,6 +44,11 @@ public class AppConfig {
     public static String C3PRO_SERVER_CREDENTIALS=      "app.authfile.c3pro.server";
     public static String C3PRO_CONSUMER_DATASOURCE=     "app.c3pro.consumer.datasourcefile";
 
+    public static final String HOST_FHIR_I2B2=          "app.host.fhir.i2b2";
+    public static final String ENDPOINT_FHIR_I2B2=      "app.endpoint.fhir.i2b2.qa";
+    public static final String PORT_FHIR_I2B2=          "app.port.fhir.i2b2";
+    public static final String PROTOCOL_FHIR_I2B2=      "app.network.protocol.fhir.i2b2";
+
     public static String UTF = "UTF-8";
 
     public static int HTTP_TRANSPORT_BUFFER_SIZE = 500;
