@@ -98,6 +98,7 @@ public class SQSListener implements MessageListener, Serializable {
 	}
 
     protected void saveMessage(String messageString) throws C3PROException {
+        System.out.println(messageString);
         if (isQuestionnaireAnswers(messageString)) {
             log.info("Saving QA resource to i2b2");
             try {
@@ -114,7 +115,7 @@ public class SQSListener implements MessageListener, Serializable {
 
     private boolean isQuestionnaireAnswers(String msg) {
         //TODO: check which kind of resources treat
-        return true;
+        return false;
     }
 
     protected void saveRawMessage(String uuid, String message, String key, String keyId) throws C3PROException {
