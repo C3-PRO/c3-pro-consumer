@@ -45,7 +45,9 @@ public class AppConfig {
     public static String C3PRO_CONSUMER_DATASOURCE=     "app.c3pro.consumer.datasourcefile";
 
     public static final String HOST_FHIR_I2B2=          "app.host.fhir.i2b2";
-    public static final String ENDPOINT_FHIR_I2B2=      "app.endpoint.fhir.i2b2.qa";
+    public static final String ENDPOINT_FHIR_I2B2_QA=   "app.endpoint.fhir.i2b2.qa";
+    public static final String ENDPOINT_FHIR_I2B2_OBS=  "app.endpoint.fhir.i2b2.obs";
+    public static final String ENDPOINT_FHIR_I2B2_CON=  "app.endpoint.fhir.i2b2.con";
     public static final String PORT_FHIR_I2B2=          "app.port.fhir.i2b2";
     public static final String PROTOCOL_FHIR_I2B2=      "app.network.protocol.fhir.i2b2";
 

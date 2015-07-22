@@ -20,18 +20,30 @@ public class I2B2FHIRCell {
     private HttpRequest httpRequest;
 
     public Response postQuestionnaireAnswers(String qa) throws C3PROException, IOException {
-        String url = generateURL();
+        return postResource(qa, AppConfig.getProp(AppConfig.ENDPOINT_FHIR_I2B2_QA));
+    }
 
-        Response resp = this.httpRequest.doPostGeneric(url, qa, "", HTTP_TYPE_CONSUMES);
+    public Response postObservation(String obs) throws C3PROException, IOException {
+        return postResource(obs, AppConfig.getProp(AppConfig.ENDPOINT_FHIR_I2B2_OBS));
+    }
+
+    public Response postContract(String con) throws C3PROException, IOException {
+        return postResource(con, AppConfig.getProp(AppConfig.ENDPOINT_FHIR_I2B2_CON));
+    }
+
+    private Response postResource(String resource, String endPoint) throws C3PROException, IOException {
+        String url = generateURL(endPoint);
+        Response resp = this.httpRequest.doPostGeneric(url, resource, "", HTTP_TYPE_CONSUMES);
         return resp;
 
     }
-    private String generateURL() throws C3PROException {
+
+    private String generateURL(String endPoint) throws C3PROException {
         return Utils.generateURL(
                 AppConfig.getProp(AppConfig.PROTOCOL_FHIR_I2B2),
                 AppConfig.getProp(AppConfig.HOST_FHIR_I2B2),
                 AppConfig.getProp(AppConfig.PORT_FHIR_I2B2),
-                AppConfig.getProp(AppConfig.ENDPOINT_FHIR_I2B2));
+                endPoint);
     }
 
 }

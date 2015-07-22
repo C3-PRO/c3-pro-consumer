@@ -31,6 +31,9 @@ import org.bch.c3pro.consumer.config.AppConfig;
 import org.bch.c3pro.consumer.exception.C3PROException;
 import org.bch.c3pro.consumer.model.Resource;
 import org.bch.c3pro.consumer.util.Response;
+import org.json.JSONObject;
+
+import org.json.JSONException;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 
@@ -38,7 +41,12 @@ import org.slf4j.Logger;
 public class SQSListener implements MessageListener, Serializable {
 	private Map<String, PrivateKey> privateKeyMap = new HashMap<>();
 
-	private EntityManager em = null;
+    private final static String FHIR_OBSERVATION = "observation";
+    private final static String FHIR_QA = "questionnaireAnswers";
+    private final static String FHIR_CON = "contract";
+    private final static String FHIR_RESOURCE_TYPE = "resourceType";
+
+    private EntityManager em = null;
 
 	Logger log = LoggerFactory.getLogger(SQSListener.class);
 
@@ -99,23 +107,46 @@ public class SQSListener implements MessageListener, Serializable {
 
     protected void saveMessage(String messageString) throws C3PROException {
         System.out.println(messageString);
-        if (isQuestionnaireAnswers(messageString)) {
-            log.info("Saving QA resource to i2b2");
-            try {
-                Response resp = fhirCell.postQuestionnaireAnswers(messageString);
-                int code = resp.getResponseCode();
-                log.info(""+code);
-                if (code>=400) throw new C3PROException("Error storing data into i2b2");
-            } catch (IOException e) {
-                e.printStackTrace();
-                throw new C3PROException(e.getMessage(), e);
+        String resourceType = this.getResourceType(messageString);
+        Response resp = null;
+
+        try {
+            switch(resourceType) {
+                case FHIR_QA:
+                    resp = fhirCell.postQuestionnaireAnswers(messageString);
+                    break;
+                case FHIR_CON:
+                    resp = fhirCell.postContract(messageString);
+                    break;
+                case FHIR_OBSERVATION:
+                    resp = fhirCell.postObservation(messageString);
+                    break;
+                default:
+                    throw new C3PROException("FHIR Resource " + resourceType + " not supported");
             }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new C3PROException(e.getMessage(), e);
         }
+
+        int code = resp.getResponseCode();
+        log.info(""+code);
+        if (code>=400) throw new C3PROException("Error storing data into i2b2");
 	}
 
-    private boolean isQuestionnaireAnswers(String msg) {
-        //TODO: check which kind of resources treat
-        return false;
+
+    protected String getResourceType(String msg) throws C3PROException {
+        try {
+            JSONObject json = new JSONObject(msg);
+            String resourceType = json.getString(FHIR_RESOURCE_TYPE);
+            return resourceType;
+        } catch (JSONException e) {
+            e.printStackTrace();
+            throw new C3PROException(e.getMessage(), e);
+
+        }
+
     }
 
     protected void saveRawMessage(String uuid, String message, String key, String keyId) throws C3PROException {
