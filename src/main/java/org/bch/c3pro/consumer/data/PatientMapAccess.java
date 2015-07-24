@@ -22,7 +22,6 @@ import java.util.List;
 @RequestScoped
 public class PatientMapAccess {
 
-    @Inject
     private EntityManager em;
 
     /**
