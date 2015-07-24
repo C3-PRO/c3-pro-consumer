@@ -8,9 +8,7 @@ import java.nio.file.Paths;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -26,9 +24,15 @@ import javax.jms.TextMessage;
 import javax.persistence.EntityManager;
 import javax.transaction.UserTransaction;
 
+import ca.uhn.fhir.context.FhirContext;
+import ca.uhn.fhir.model.dstu2.resource.Contract;
+import ca.uhn.fhir.model.dstu2.resource.Observation;
+import ca.uhn.fhir.model.dstu2.resource.QuestionnaireAnswers;
 import org.apache.commons.codec.binary.Base64;
 import org.bch.c3pro.consumer.config.AppConfig;
+import org.bch.c3pro.consumer.data.PatientMapAccess;
 import org.bch.c3pro.consumer.exception.C3PROException;
+import org.bch.c3pro.consumer.model.PatientMap;
 import org.bch.c3pro.consumer.model.Resource;
 import org.bch.c3pro.consumer.util.Response;
 import org.json.JSONObject;
@@ -48,6 +52,8 @@ public class SQSListener implements MessageListener, Serializable {
 
     private EntityManager em = null;
 
+    protected FhirContext ctx = FhirContext.forDstu2();
+
 	Logger log = LoggerFactory.getLogger(SQSListener.class);
 
     @javax.annotation.Resource
@@ -55,6 +61,9 @@ public class SQSListener implements MessageListener, Serializable {
 
     @Inject
     protected I2B2FHIRCell fhirCell;
+
+    @Inject
+    protected PatientMapAccess patientMapAccess;
 
 	@Override
 	public void onMessage(Message messageWrapper) {
@@ -111,14 +120,18 @@ public class SQSListener implements MessageListener, Serializable {
         Response resp = null;
 
         try {
+            log.info("Saving " + resourceType + " fhir resource");
             switch(resourceType) {
                 case FHIR_QA:
+                    messageString = replaceSubjectIdQA(messageString);
                     resp = fhirCell.postQuestionnaireAnswers(messageString);
                     break;
                 case FHIR_CON:
-                    resp = fhirCell.postContract(messageString);
+                    storeContract(messageString);
+                    //resp = fhirCell.postContract(messageString);
                     break;
                 case FHIR_OBSERVATION:
+                    messageString = replaceSubjectIdObs(messageString);
                     resp = fhirCell.postObservation(messageString);
                     break;
                 default:
@@ -129,12 +142,131 @@ public class SQSListener implements MessageListener, Serializable {
             e.printStackTrace();
             throw new C3PROException(e.getMessage(), e);
         }
-
-        int code = resp.getResponseCode();
-        log.info(""+code);
-        if (code>=400) throw new C3PROException("Error storing data into i2b2");
+        if (resp!=null) {
+            int code = resp.getResponseCode();
+            log.info(""+code);
+            if (code>=400) throw new C3PROException("Error storing data into i2b2");
+        }
 	}
 
+    protected String replaceSubjectIdQA(String message) throws C3PROException {
+        QuestionnaireAnswers qa = (QuestionnaireAnswers) ctx.newJsonParser().parseResource(message);
+        String subject = qa.getSubject().getReference().getIdPart();
+        if (subject == null) {
+            log.warn("Subject is null in a QuestionnaireAnswers Resource");
+            return message;
+        }
+        String i2b2Subject = findI2B2Subject(subject);
+
+        qa.getSubject().setReference("Patient/"+i2b2Subject);
+        return ctx.newJsonParser().encodeResourceToString(qa);
+
+    }
+
+    protected String replaceSubjectIdObs(String message) throws C3PROException {
+        Observation obs = (Observation) ctx.newJsonParser().parseResource(message);
+        String subject = obs.getSubject().getReference().getIdPart();
+        if (subject == null) {
+            log.warn("Subject is null in a Observation Resource");
+            return message;
+        }
+        String i2b2Subject = findI2B2Subject(subject);
+
+        obs.getSubject().setReference("Patient/"+i2b2Subject);
+        return ctx.newJsonParser().encodeResourceToString(obs);
+
+    }
+
+    protected String findI2B2Subject(String signature) throws C3PROException {
+        try {
+            tx.begin();
+            List<PatientMap> maps = this.patientMapAccess.findBySignature(signature);
+            if (maps.size()==0) {
+                log.warn("No mapping correspondance for signature " + signature);
+                return null;
+            } else if (maps.size()>1) {
+                log.warn("More than one mapping found for " + signature + ". Getting the first one");
+            }
+            return maps.get(0).getSubjectId();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new C3PROException(e.getMessage(), e);
+        }
+    }
+
+    protected void storeContract(String contractJson) throws C3PROException {
+        String id = null;
+        String version = null;
+        Date startDate = null;
+        String system = null;
+        String code = null;
+        String display = null;
+        String signature = null;
+
+        try {
+            Contract contract = (Contract) ctx.newJsonParser().parseResource(contractJson);
+            id = contract.getId().getIdPart();
+            version = (String) contract.getResourceMetadata().get("versionId");
+            startDate = contract.getApplies().getStart();
+            system = contract.getSigner().
+                    get(0).
+                    getType().
+                    get(0).getSystem();
+
+            code = contract.getSigner().
+                    get(0).
+                    getType().
+                    get(0).getCode();
+
+            display = contract.getSigner().
+                    get(0).
+                    getType().
+                    get(0).getDisplay();
+
+            signature = contract.getSigner().
+                    get(0).getSignature();
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new C3PROException(e.getMessage(), e);
+        }
+        System.out.println("id:" + id);
+        System.out.println("version:" + version);
+        System.out.println("startDate:" + startDate.toString());
+        System.out.println("system:" + system);
+        System.out.println("code:" + code);
+        System.out.println("display:" + display);
+        System.out.println("signature:" + signature);
+
+        PatientMap patientMap = new PatientMap();
+        patientMap.setId(id);
+        patientMap.setVersionId(version);
+        patientMap.setCode(code);
+        patientMap.setDisplay(display);
+        patientMap.setSignature(signature);
+        patientMap.setStartDate(startDate);
+        patientMap.setSystem(system);
+
+        // finally, we generate the subject id that will
+        patientMap.setSubjectId(UUID.randomUUID().toString());
+        try {
+            tx.begin();
+            em.persist(patientMap);
+            em.flush();
+            tx.commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+            try {
+                tx.rollback();
+            } catch (Exception ee) {
+                e.printStackTrace();
+            }
+            throw new C3PROException("Error storing consent data: " + e.getMessage(), e);
+        }
+
+    }
 
     protected String getResourceType(String msg) throws C3PROException {
         try {
@@ -180,6 +312,7 @@ public class SQSListener implements MessageListener, Serializable {
 
     public void setEntityManager(EntityManager em) {
         this.em = em;
+        this.patientMapAccess.setEntityManager(em);
     }
 
 	public static byte [] decryptMessage(byte [] messageEnc, byte[] secretKeyBytes) throws GeneralSecurityException,
