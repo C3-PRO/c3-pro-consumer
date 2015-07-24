@@ -45,9 +45,9 @@ import org.slf4j.Logger;
 public class SQSListener implements MessageListener, Serializable {
 	private Map<String, PrivateKey> privateKeyMap = new HashMap<>();
 
-    private final static String FHIR_OBSERVATION = "observation";
-    private final static String FHIR_QA = "questionnaireAnswers";
-    private final static String FHIR_CON = "contract";
+    private final static String FHIR_OBSERVATION = "Observation";
+    private final static String FHIR_QA = "QuestionnaireAnswers";
+    private final static String FHIR_CON = "Contract";
     private final static String FHIR_RESOURCE_TYPE = "resourceType";
 
     private EntityManager em = null;
