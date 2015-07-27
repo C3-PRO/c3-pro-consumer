@@ -25,6 +25,7 @@ import javax.persistence.EntityManager;
 import javax.transaction.UserTransaction;
 
 import ca.uhn.fhir.context.FhirContext;
+import ca.uhn.fhir.model.api.ResourceMetadataKeyEnum;
 import ca.uhn.fhir.model.dstu2.resource.Contract;
 import ca.uhn.fhir.model.dstu2.resource.Observation;
 import ca.uhn.fhir.model.dstu2.resource.QuestionnaireAnswers;
@@ -207,7 +208,7 @@ public class SQSListener implements MessageListener, Serializable {
         try {
             Contract contract = (Contract) ctx.newJsonParser().parseResource(contractJson);
             id = contract.getId().getIdPart();
-            version = contract.getStructureFhirVersionEnum().getVersionImplementation().getVersion().toString();
+            version = contract.getResourceMetadata().get(ResourceMetadataKeyEnum.VERSION).toString();
             //version = (String) contract.getResourceMetadata().get("versionId");
             startDate = contract.getApplies().getStart();
             system = contract.getSigner().
