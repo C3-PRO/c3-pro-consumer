@@ -180,7 +180,6 @@ public class SQSListener implements MessageListener, Serializable {
 
     protected String findI2B2Subject(String signature) throws C3PROException {
         try {
-            tx.begin();
             List<PatientMap> maps = this.patientMapAccess.findBySignature(signature);
             if (maps.size()==0) {
                 log.warn("No mapping correspondance for signature " + signature);
