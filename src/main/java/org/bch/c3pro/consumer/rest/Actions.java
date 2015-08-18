@@ -101,7 +101,7 @@ public class Actions {
             } else {
                 messageString = new String(secretKey, "UTF-8");
             }
-
+            System.out.println("Message: " + messageString);
 
         } catch (Exception e) {
             e.printStackTrace();
