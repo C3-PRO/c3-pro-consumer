@@ -2,7 +2,8 @@ CREATE TABLE resource_table (
   uuid VARCHAR2(40) NOT NULL,
   json CLOB,
   key CLOB,
-  key_id VARCHAR2(40) NOT NULL
+  key_id VARCHAR2(40) NOT NULL,
+  processed VARCHAR(700)
 );
 
 CREATE TABLE patient_map (
@@ -56,4 +57,4 @@ CREATE INDEX META_SYNONYM_C3PRO_IDX ON C3PRO(C_SYNONYM_CD)
 ;
 
 INSERT INTO TABLE_ACCESS(C_TABLE_CD, C_TABLE_NAME, C_PROTECTED_ACCESS, C_HLEVEL, C_FULLNAME, C_NAME, C_SYNONYM_CD, C_VISUALATTRIBUTES, C_TOTALNUM, C_BASECODE, C_METADATAXML, C_FACTTABLECOLUMN, C_DIMTABLENAME, C_COLUMNNAME, C_COLUMNDATATYPE, C_OPERATOR, C_DIMCODE, C_COMMENT, C_TOOLTIP, C_ENTRY_DATE, C_CHANGE_DATE, C_STATUS_CD, VALUETYPE_CD)
-VALUES('c-tracker Surveys', 'C3PRO', 'N', 0, '\c-tracker Surveys\', 'c-tracker Surveys', 'N', 'CA', NULL, NULL, NULL, 'concept_cd', 'concept_dimension', 'concept_path', 'T', 'LIKE', '\c-tracker Surveys\', NULL, 'c-tracker Surveys', NULL, NULL, NULL, NULL);
+VALUES('c-tracker', 'C3PRO', 'N', 0, '\c-tracker\', 'c-tracker', 'N', 'CA', NULL, NULL, NULL, 'concept_cd', 'concept_dimension', 'concept_path', 'T', 'LIKE', '\c-tracker\', NULL, 'c-tracker', NULL, NULL, NULL, NULL);

@@ -10,15 +10,31 @@ private static final long serialVersionUID = 1L;
 	@Id
     @Column(name = "uuid", unique = true)
     private String UUID;
-	
+
+	/**
+	 * The encrypted fhir resource message
+	 */
 	@Lob
 	private String json;
-	
+
+	/**
+	 * The encrypted symmetric key used for AES
+	 */
 	@Lob
 	private String key;
 
+	/**
+	 * The public-private key id used to encrypt the AES symmetic key
+	 */
     @Column(name = "key_id")
     private String keyId;
+
+	/**
+	 * If null, the resource has been proceesed correctly and it's in i2b2
+	 * Otherwise, the column will contain the error message.
+	 */
+	@Column(name = "processed", nullable=true)
+	private String processed = null;
 
 	public String getUUID() {
 		return UUID;
@@ -51,6 +67,12 @@ private static final long serialVersionUID = 1L;
     public void setKeyId(String keyId) {
         this.keyId = keyId;
     }
-	
-	
+
+    public String getProcessed() {
+        return processed;
+    }
+
+    public void setProcessed(String processed) {
+        this.processed = processed;
+    }
 }

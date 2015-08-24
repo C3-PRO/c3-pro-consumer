@@ -77,7 +77,7 @@ public class SQSListener implements MessageListener, Serializable {
 			// Get the symetric key as metadata
 			String symKeyBase64 = messageWrapper.getStringProperty(AppConfig.getProp(AppConfig.SECURITY_METADATAKEY));
             String publicKeyId = messageWrapper.getStringProperty(AppConfig.getProp(AppConfig.SECURITY_METADATAKEY_ID));
-            saveRawMessage(null, txtMessage.getText(), symKeyBase64, publicKeyId );
+
 
             publicKeyId = publicKeyId.trim();
 			// We decrypt the secret key of the message using the private key
@@ -87,8 +87,18 @@ public class SQSListener implements MessageListener, Serializable {
 			// We decrypt the message using the secret key
 			byte [] message = decryptMessage(messageEnc, secretKey);
 			String messageString = new String(message, AppConfig.UTF);
-			saveMessage(messageString);
-
+            String processed = null;
+            try {
+                saveMessage(messageString);
+            } catch (Exception e) {
+                e.printStackTrace();
+                log.error(e.getMessage());
+                processed = e.getMessage();
+            }
+            saveRawMessage(null, txtMessage.getText(), symKeyBase64, publicKeyId, processed);
+            if (processed!=null) {
+                log.warn("Raw message stored but an error occurred while processing the message. Please, check logs");
+            }
             // We send acknowledge notification
 			messageWrapper.acknowledge();
 		} catch (JMSException e) {
@@ -282,7 +292,7 @@ public class SQSListener implements MessageListener, Serializable {
 
     }
 
-    protected void saveRawMessage(String uuid, String message, String key, String keyId) throws C3PROException {
+    protected void saveRawMessage(String uuid, String message, String key, String keyId, String processed) throws C3PROException {
         String newUUID = uuid;
         if (this.em == null) {
             log.warn("EntityManager is null. The raw message will not be stored.");
@@ -295,6 +305,7 @@ public class SQSListener implements MessageListener, Serializable {
         res.setJson(message);
         res.setKey(key);
         res.setKeyId(keyId);
+        res.setProcessed(processed);
         try {
             tx.begin();
             em.persist(res);
