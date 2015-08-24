@@ -195,7 +195,7 @@ public class SQSListener implements MessageListener, Serializable {
                 log.warn("No mapping correspondance for signature " + signature);
                 return null;
             } else if (maps.size()>1) {
-                log.warn("More than one mapping found for " + signature + ". Getting the first one");
+                log.warn("More than one mapping found for signature " + signature + ". Getting the first one");
             }
             return maps.get(0).getSubjectId();
 
