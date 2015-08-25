@@ -32,7 +32,7 @@ public class AppConfig {
 
     public static String SECURITY_PRIVATEKEY_ALG =      "app.security.privatekey.algorithm";
     public static String SECURITY_PRIVATEKEY_BASEALG =  "app.security.privatekey.basealgorithm";
-    public static String SECURITY_PRIVATEKEY_FILENAME = 	"app.security.privatekey.filename";
+    public static String SECURITY_PRIVATEKEY_FILENAME = "app.security.privatekey.filename";
     public static String SECURITY_PRIVATEKEY_BASEPATH = "app.security.privatekey.basepath";
     public static String SECURITY_SECRETKEY_BASEALG = 	"app.security.secretkey.basealgorithm";
     public static String SECURITY_SECRETKEY_ALG = 		"app.security.secretkey.algorithm";
@@ -48,6 +48,7 @@ public class AppConfig {
     public static final String ENDPOINT_FHIR_I2B2_QA=   "app.endpoint.fhir.i2b2.qa";
     public static final String ENDPOINT_FHIR_I2B2_OBS=  "app.endpoint.fhir.i2b2.obs";
     public static final String ENDPOINT_FHIR_I2B2_CON=  "app.endpoint.fhir.i2b2.con";
+    public static final String ENDPOINT_FHIR_I2B2_PAT=  "app.endpoint.fhir.i2b2.pat";
     public static final String PORT_FHIR_I2B2=          "app.port.fhir.i2b2";
     public static final String PROTOCOL_FHIR_I2B2=      "app.network.protocol.fhir.i2b2";
 

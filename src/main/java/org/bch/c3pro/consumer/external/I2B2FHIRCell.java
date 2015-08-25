@@ -31,11 +31,21 @@ public class I2B2FHIRCell {
         return postResource(con, AppConfig.getProp(AppConfig.ENDPOINT_FHIR_I2B2_CON));
     }
 
+    public Response putPatient(String patient, String patientId) throws C3PROException, IOException {
+        return putResource(patient, AppConfig.getProp(AppConfig.ENDPOINT_FHIR_I2B2_PAT), "/"+patientId);
+    }
+
     private Response postResource(String resource, String endPoint) throws C3PROException, IOException {
         String url = generateURL(endPoint);
         Response resp = this.httpRequest.doPostGeneric(url, resource, "", HTTP_TYPE_CONSUMES);
         return resp;
 
+    }
+
+    private Response putResource(String resource, String endPoint, String extra) throws C3PROException, IOException {
+        String url = generateURL(endPoint) + extra;
+        Response resp = this.httpRequest.doPostGeneric(url, resource, "", HTTP_TYPE_CONSUMES, "PUT");
+        return resp;
     }
 
     private String generateURL(String endPoint) throws C3PROException {

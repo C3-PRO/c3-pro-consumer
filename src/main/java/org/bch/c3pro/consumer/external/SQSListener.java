@@ -28,7 +28,9 @@ import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.model.api.ResourceMetadataKeyEnum;
 import ca.uhn.fhir.model.dstu2.resource.Contract;
 import ca.uhn.fhir.model.dstu2.resource.Observation;
+import ca.uhn.fhir.model.dstu2.resource.Patient;
 import ca.uhn.fhir.model.dstu2.resource.QuestionnaireAnswers;
+import ca.uhn.fhir.model.primitive.IdDt;
 import org.apache.commons.codec.binary.Base64;
 import org.bch.c3pro.consumer.config.AppConfig;
 import org.bch.c3pro.consumer.data.PatientMapAccess;
@@ -49,6 +51,7 @@ public class SQSListener implements MessageListener, Serializable {
     private final static String FHIR_OBSERVATION = "Observation";
     private final static String FHIR_QA = "QuestionnaireAnswers";
     private final static String FHIR_CON = "Contract";
+    private final static String FHIR_PATIENT = "Patient";
     private final static String FHIR_RESOURCE_TYPE = "resourceType";
 
     private EntityManager em = null;
@@ -145,6 +148,11 @@ public class SQSListener implements MessageListener, Serializable {
                     messageString = replaceSubjectIdObs(messageString);
                     resp = fhirCell.postObservation(messageString);
                     break;
+                case FHIR_PATIENT:
+                    Patient patient = replaceSubjectIdPatient(messageString);
+                    messageString = ctx.newJsonParser().encodeResourceToString(patient);
+                    resp = fhirCell.putPatient(messageString, patient.getId().getIdPart());
+                    break;
                 default:
                     throw new C3PROException("FHIR Resource " + resourceType + " not supported");
             }
@@ -172,6 +180,16 @@ public class SQSListener implements MessageListener, Serializable {
         qa.getSubject().setReference("Patient/"+i2b2Subject);
         return ctx.newJsonParser().encodeResourceToString(qa);
 
+    }
+
+    protected Patient replaceSubjectIdPatient(String message) throws C3PROException {
+        Patient patient = (Patient) ctx.newJsonParser().parseResource(message);
+        IdDt iddt = patient.getId();
+        String subject = iddt.getIdPart();
+        String i2b2Subject = findI2B2Subject(subject);
+        iddt = iddt.setValue(i2b2Subject);
+        patient.setId(iddt);
+        return patient;
     }
 
     protected String replaceSubjectIdObs(String message) throws C3PROException {
