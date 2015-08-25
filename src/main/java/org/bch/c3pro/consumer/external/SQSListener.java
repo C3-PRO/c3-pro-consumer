@@ -151,6 +151,8 @@ public class SQSListener implements MessageListener, Serializable {
                 case FHIR_PATIENT:
                     Patient patient = replaceSubjectIdPatient(messageString);
                     messageString = ctx.newJsonParser().encodeResourceToString(patient);
+                    System.out.println("FHIRRRRR REPLACED");
+                    System.out.println(messageString);
                     resp = fhirCell.putPatient(messageString, patient.getId().getIdPart());
                     break;
                 default:
