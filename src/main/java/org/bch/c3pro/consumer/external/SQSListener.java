@@ -189,8 +189,8 @@ public class SQSListener implements MessageListener, Serializable {
         IdDt iddt = patient.getId();
         String subject = iddt.getIdPart();
         String i2b2Subject = findI2B2Subject(subject);
-        iddt = iddt.setValue(i2b2Subject);
-        patient.setId(iddt);
+        IdDt newId = new IdDt("Patient", i2b2Subject , "1");
+        patient.setId(newId);
         return patient;
     }
 
