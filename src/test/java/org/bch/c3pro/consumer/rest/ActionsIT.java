@@ -119,9 +119,9 @@ public class ActionsIT {
         } else {
             JSONObject jsonObjIn = new JSONObject(jsonIn);
             JSONObject jsonObjOut = new JSONObject(sb.toString());
-            //JSONObject qIn = jsonObjIn.getJSONObject("group");
-            //JSONObject qOut = jsonObjOut.getJSONObject("group");
-            assertEquals(jsonObjIn.toString(), jsonObjOut.toString());
+            JSONObject qIn = jsonObjIn.getJSONObject("group");
+            JSONObject qOut = jsonObjOut.getJSONObject("group");
+            assertEquals(qIn.toString(), qOut.toString());
         }
     }
 
