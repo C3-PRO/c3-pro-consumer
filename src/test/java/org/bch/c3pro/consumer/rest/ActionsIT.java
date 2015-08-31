@@ -73,6 +73,7 @@ public class ActionsIT {
      */
     @Test
     public void generalTest_IT() throws Exception {
+        clear();
         HttpRequest http = new HttpRequest();
         String jsonIn =readTextFile("mainQuestionnaireAnswer.json");
         String contentTypeHeader = "application/json";
@@ -137,6 +138,8 @@ public class ActionsIT {
      */
     @Test
     public void generalTestPatient_IT() throws Exception {
+        clear();
+        if (sb.length()!=0) sb.delete(0,sb.length());
         HttpRequest http = new HttpRequest();
         String jsonIn =readTextFile("patientResource.json");
         String contentTypeHeader = "application/json";
@@ -189,7 +192,12 @@ public class ActionsIT {
     }
 
 
-
+    private void clear() {
+        if (sb.length()!=0) sb.delete(0,sb.length());
+        if (uuid.length()!=0) uuid.delete(0,uuid.length());
+        if (json.length()!=0) json.delete(0,json.length());
+        if (key.length()!=0) key.delete(0,key.length());
+    }
 
     private String readTextFile(String fileName) throws Exception {
         InputStream in = ActionsIT.class.getResourceAsStream(fileName);
