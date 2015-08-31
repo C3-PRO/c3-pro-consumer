@@ -71,7 +71,7 @@ public class ActionsIT {
      * resource
      * @throws Exception
      */
-    @Test
+    @Ignore
     public void generalTest_IT() throws Exception {
         HttpRequest http = new HttpRequest();
         String jsonIn =readTextFile("q1.json");
@@ -136,10 +136,10 @@ public class ActionsIT {
      * NOTE: It must be executed with an empty table and an empty Queue
      * @throws Exception
      */
-    @Ignore("Broken")
-    public void endToEndTest_IT() throws Exception {
+    @Test
+    public void endToEndTestuestionnaireAnswers_IT() throws Exception {
         HttpRequest http = new HttpRequest();
-        String jsonIn =readTextFile("q1.json");
+        String jsonIn =readTextFile("mainQuestionnaireAnswer.json");
         String contentTypeHeader = "application/json";
 
         String urlAuth = AppConfig.getProp(AppConfig.C3PRO_SERVER_TRANS) + "://" +
@@ -150,7 +150,7 @@ public class ActionsIT {
         String url = AppConfig.getProp(AppConfig.C3PRO_SERVER_TRANS) + "://" +
                 AppConfig.getProp(AppConfig.C3PRO_SERVER_HOST) + ":" +
                 AppConfig.getProp(AppConfig.C3PRO_SERVER_PORT) +
-                "/c3pro/fhir/Questionnaire";
+                "/c3pro/fhir/QuestionnaireAnswers";
 
         // First we get the access token
         String cred = AppConfig.getAuthCredentials(AppConfig.C3PRO_SERVER_CREDENTIALS);
