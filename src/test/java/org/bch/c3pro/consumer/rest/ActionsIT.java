@@ -114,13 +114,13 @@ public class ActionsIT {
         System.out.println("Waiting for 7 seconds to let the consumer process the message");
         Thread.sleep(7000);
         if (sb.length()==0) {
-            fail("Timeout: waiting for 4 seconds to read from queue");
+            fail("Timeout: waiting for 7 seconds to read from queue");
         } else {
             JSONObject jsonObjIn = new JSONObject(jsonIn);
             JSONObject jsonObjOut = new JSONObject(sb.toString());
-            JSONObject qIn = jsonObjIn.getJSONObject("group");
-            JSONObject qOut = jsonObjOut.getJSONObject("group");
-            assertEquals(qIn.toString(), qOut.toString());
+            //JSONObject qIn = jsonObjIn.getJSONObject("group");
+            //JSONObject qOut = jsonObjOut.getJSONObject("group");
+            assertEquals(jsonObjIn.toString(), jsonObjOut.toString());
         }
     }
 
@@ -178,13 +178,13 @@ public class ActionsIT {
         System.out.println("Waiting for 7 seconds to let the consumer process the message");
         Thread.sleep(7000);
         if (sb.length()==0) {
-            fail("Timeout: waiting for 4 seconds to read from queue");
+            fail("Timeout: waiting for 7 seconds to read from queue");
         } else {
             JSONObject jsonObjIn = new JSONObject(jsonIn);
             JSONObject jsonObjOut = new JSONObject(sb.toString());
-            JSONObject qIn = jsonObjIn.getJSONObject("group");
-            JSONObject qOut = jsonObjOut.getJSONObject("group");
-            assertEquals(qIn.toString(), qOut.toString());
+            //JSONObject qIn = jsonObjIn.getJSONObject("group");
+            //JSONObject qOut = jsonObjOut.getJSONObject("group");
+            assertEquals(jsonObjIn.toString(), jsonObjIn.toString());
         }
     }
 
