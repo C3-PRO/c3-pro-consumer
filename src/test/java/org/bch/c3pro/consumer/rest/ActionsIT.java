@@ -124,20 +124,19 @@ public class ActionsIT {
         }
     }
 
+
     /**
-     * Validates similar points and include the storage access
+     * Validates the following points:
      * - ClientId/Secret key are correctly set
      * - Oauth protocol provides a valid bearer token for ClientId
      * - Doing POST with the given token works
      * - We can read from the SQS
-     * - We can store the encrypted message in the DB. So, that DB connection works
-     * - We can read the from DB the same exact encrypted info that we received from the Queue
-     *
-     * NOTE: It must be executed with an empty table and an empty Queue
+     * - We can decrypt the message from the SQS using the private key of the system and recuperate the original
+     * resource
      * @throws Exception
      */
-    @Ignore
-    public void endToEndTestuestionnaireAnswers_IT() throws Exception {
+    @Test
+    public void generalTestPatient_IT() throws Exception {
         HttpRequest http = new HttpRequest();
         String jsonIn =readTextFile("mainQuestionnaireAnswer.json");
         String contentTypeHeader = "application/json";
@@ -150,7 +149,7 @@ public class ActionsIT {
         String url = AppConfig.getProp(AppConfig.C3PRO_SERVER_TRANS) + "://" +
                 AppConfig.getProp(AppConfig.C3PRO_SERVER_HOST) + ":" +
                 AppConfig.getProp(AppConfig.C3PRO_SERVER_PORT) +
-                "/c3pro/fhir/QuestionnaireAnswers";
+                "/c3pro/fhir/Patient";
 
         // First we get the access token
         String cred = AppConfig.getAuthCredentials(AppConfig.C3PRO_SERVER_CREDENTIALS);
@@ -169,34 +168,18 @@ public class ActionsIT {
 
         // Now we push the questionnaire
         authHeader = "Bearer " + token;
-        resp = http.doPostGeneric(url,jsonIn,authHeader,contentTypeHeader);
+        resp = http.doPostGeneric(url,jsonIn,authHeader,contentTypeHeader, "PUT");
         assertTrue(resp.getResponseCode() >= 200 && resp.getResponseCode() <= 204);
 
-        // And we check that the questionnaire is received properly
+        // And we check that the patient is received properly
         SQSAccess sqsAccess = SQSAccess.getInstance();
-        SQSListener listener = new SQSListenerTest(true);
+        SQSListener listener = new SQSListenerTest(false);
         sqsAccess.startListening(listener);
         System.out.println("Waiting for 7 seconds to let the consumer process the message");
         Thread.sleep(7000);
         if (sb.length()==0) {
             fail("Timeout: waiting for 4 seconds to read from queue");
         } else {
-            String infoDB = AppConfig.getAuthCredentials(AppConfig.C3PRO_CONSUMER_DATASOURCE);
-            String [] infoDBParse = infoDB.split(",");
-            Class.forName("oracle.jdbc.driver.OracleDriver");
-            Connection conn = DriverManager.getConnection(infoDBParse[0], infoDBParse[1], infoDBParse[2]);
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery("Select json, key from resource_table");
-            if (!rs.next()) fail();
-            String jsonDB = rs.getString("json");
-            String keyDB = rs.getString("key");
-            String uuidDB = rs.getString("uuid");
-            assertEquals(ActionsIT.json.toString(), jsonDB);
-            assertEquals(ActionsIT.key.toString(), keyDB);
-            assertEquals(ActionsIT.uuid.toString(), uuidDB);
-            rs.deleteRow();
-            conn.close();
-
             JSONObject jsonObjIn = new JSONObject(jsonIn);
             JSONObject jsonObjOut = new JSONObject(sb.toString());
             JSONObject qIn = jsonObjIn.getJSONObject("group");
@@ -204,6 +187,9 @@ public class ActionsIT {
             assertEquals(qIn.toString(), qOut.toString());
         }
     }
+
+
+
 
     private String readTextFile(String fileName) throws Exception {
         InputStream in = ActionsIT.class.getResourceAsStream(fileName);
