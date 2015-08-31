@@ -138,7 +138,7 @@ public class ActionsIT {
     @Test
     public void generalTestPatient_IT() throws Exception {
         HttpRequest http = new HttpRequest();
-        String jsonIn =readTextFile("mainQuestionnaireAnswer.json");
+        String jsonIn =readTextFile("patientResource.json");
         String contentTypeHeader = "application/json";
 
         String urlAuth = AppConfig.getProp(AppConfig.C3PRO_SERVER_TRANS) + "://" +
