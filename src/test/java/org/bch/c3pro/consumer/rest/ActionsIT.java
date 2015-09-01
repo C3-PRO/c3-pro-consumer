@@ -35,32 +35,6 @@ public class ActionsIT {
     public static StringBuffer json = new StringBuffer();
     public static StringBuffer key = new StringBuffer();
 
-
-    @Ignore
-    public void generalTestIT() throws Exception {
-        HttpRequest http = new HttpRequest();
-        String jsonIn =readTextFile("q1.json");
-        String conentTypeHeader = "application/json";
-        String url = "http://ec2-52-11-82-72.us-west-2.compute.amazonaws.com:8080/c3pro/fhir/Questionnaire";
-        Response resp = http.doPostGeneric(url,jsonIn,null,conentTypeHeader);
-        assertEquals(201, resp.getResponseCode());
-
-        SQSAccess sqsAccess = SQSAccess.getInstance();
-        SQSListener listener = new SQSListenerTest(false);
-        sqsAccess.startListening(listener);
-        System.out.println("Waiting for 4 seconds to let the consumer process the message");
-        Thread.sleep(4000);
-        if (sb.length()==0) {
-            fail("Timeout: waiting for 4 seconds to read from queue");
-        } else {
-            JSONObject jsonObjIn = new JSONObject(jsonIn);
-            JSONObject jsonObjOut = new JSONObject(sb.toString());
-            JSONObject qIn = jsonObjIn.getJSONObject("group");
-            JSONObject qOut = jsonObjOut.getJSONObject("group");
-            assertEquals(qIn.toString(), qOut.toString());
-        }
-    }
-
     /**
      * Validates the following points:
      * - ClientId/Secret key are correctly set
@@ -187,10 +161,75 @@ public class ActionsIT {
             JSONObject jsonObjOut = new JSONObject(sb.toString());
             //JSONObject qIn = jsonObjIn.getJSONObject("group");
             //JSONObject qOut = jsonObjOut.getJSONObject("group");
-            assertEquals(jsonObjIn.toString(), jsonObjIn.toString());
+            assertEquals(jsonObjIn.toString(), jsonObjOut.toString());
         }
     }
 
+
+    /**
+     * Validates the following points:
+     * - ClientId/Secret key are correctly set
+     * - Oauth protocol provides a valid bearer token for ClientId
+     * - Doing POST with the given token works
+     * - We can read from the SQS
+     * - We can decrypt the message from the SQS using the private key of the system and recuperate the original
+     * resource
+     * @throws Exception
+     */
+    @Test
+    public void generalTestContract_IT() throws Exception {
+        clear();
+        if (sb.length()!=0) sb.delete(0,sb.length());
+        HttpRequest http = new HttpRequest();
+        String jsonIn =readTextFile("contract.json");
+        String contentTypeHeader = "application/json";
+
+        String urlAuth = AppConfig.getProp(AppConfig.C3PRO_SERVER_TRANS) + "://" +
+                AppConfig.getProp(AppConfig.C3PRO_SERVER_HOST) + ":" +
+                AppConfig.getProp(AppConfig.C3PRO_SERVER_PORT) +
+                "/c3pro/oauth?grant_type=client_credentials";
+
+        String url = AppConfig.getProp(AppConfig.C3PRO_SERVER_TRANS) + "://" +
+                AppConfig.getProp(AppConfig.C3PRO_SERVER_HOST) + ":" +
+                AppConfig.getProp(AppConfig.C3PRO_SERVER_PORT) +
+                "/c3pro/fhir/Contract";
+
+        // First we get the access token
+        String cred = AppConfig.getAuthCredentials(AppConfig.C3PRO_SERVER_CREDENTIALS);
+        String authHeader = "Basic " + new String(javax.xml.bind.DatatypeConverter.printBase64Binary(cred.getBytes()));
+        System.out.println(urlAuth);
+        System.out.println(authHeader);
+        Response resp = http.doPostGeneric(urlAuth,null,authHeader,null);
+        assertTrue(resp.getResponseCode() >= 200 && resp.getResponseCode() <= 204);
+
+        String jsonRespStr = resp.getContent();
+        JSONObject jsonResp = new JSONObject(jsonRespStr);
+        String tokenType = jsonResp.getString("token_type");
+        assertEquals("bearer", tokenType);
+
+        String token = jsonResp.getString("access_token");
+
+        // Now we push the questionnaire
+        authHeader = "Bearer " + token;
+        resp = http.doPostGeneric(url,jsonIn,authHeader,contentTypeHeader, "PUT");
+        assertTrue(resp.getResponseCode() >= 200 && resp.getResponseCode() <= 204);
+
+        // And we check that the patient is received properly
+        SQSAccess sqsAccess = SQSAccess.getInstance();
+        SQSListener listener = new SQSListenerTest(false);
+        sqsAccess.startListening(listener);
+        System.out.println("Waiting for 7 seconds to let the consumer process the message");
+        Thread.sleep(7000);
+        if (sb.length()==0) {
+            fail("Timeout: waiting for 7 seconds to read from queue");
+        } else {
+            JSONObject jsonObjIn = new JSONObject(jsonIn);
+            JSONObject jsonObjOut = new JSONObject(sb.toString());
+            //JSONObject qIn = jsonObjIn.getJSONObject("group");
+            //JSONObject qOut = jsonObjOut.getJSONObject("group");
+            assertEquals(jsonObjIn.toString(), jsonObjOut.toString());
+        }
+    }
 
     private void clear() {
         if (sb.length()!=0) sb.delete(0,sb.length());

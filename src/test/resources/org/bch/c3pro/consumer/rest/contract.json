@@ -1,0 +1,23 @@
+{
+  "resourceType":"Contract",
+  "id":"ed0b78db-594b-417c-ac68-1e79e6487145",
+  "meta":{
+    "versionId":"0",
+    "lastUpdated":"2015-07-20T19:10:35.002+00:00"
+  },
+  "applies":{
+    "start":"2015-07-18T14:25:21.6428Z"
+  },
+  "signer":[
+    {
+      "type":[
+        {
+          "system":"http://hl7.org/fhir/vs/contract-signer-type",
+          "code":"1.2.840.10065.1.12.1.7",
+          "display":"Consent"
+        }
+      ],
+      "signature":"6C42BA26-4C0B-4FC9-B181-1D1484672DA9"
+    }
+  ]
+}
