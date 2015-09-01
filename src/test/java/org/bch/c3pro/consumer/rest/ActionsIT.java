@@ -29,6 +29,7 @@ import static org.junit.Assert.fail;
 public class ActionsIT {
     // It requires c3pro-server running serving to the same queue as c3pro-consumer,
     // an empty queue and the public key of the c3pro-consumer installed in the c3pro-server
+    // No consumer must be activated.
     public static StringBuffer sb = new StringBuffer();
 
     public static StringBuffer uuid = new StringBuffer();
@@ -159,9 +160,9 @@ public class ActionsIT {
         } else {
             JSONObject jsonObjIn = new JSONObject(jsonIn);
             JSONObject jsonObjOut = new JSONObject(sb.toString());
-            //JSONObject qIn = jsonObjIn.getJSONObject("group");
-            //JSONObject qOut = jsonObjOut.getJSONObject("group");
-            assertEquals(jsonObjIn.toString(), jsonObjOut.toString());
+            JSONObject qIn = jsonObjIn.getJSONObject("address");
+            JSONObject qOut = jsonObjOut.getJSONObject("address");
+            assertEquals(qIn.toString(), qOut.toString());
         }
     }
 
@@ -225,9 +226,9 @@ public class ActionsIT {
         } else {
             JSONObject jsonObjIn = new JSONObject(jsonIn);
             JSONObject jsonObjOut = new JSONObject(sb.toString());
-            //JSONObject qIn = jsonObjIn.getJSONObject("group");
-            //JSONObject qOut = jsonObjOut.getJSONObject("group");
-            assertEquals(jsonObjIn.toString(), jsonObjOut.toString());
+            JSONObject qIn = jsonObjIn.getJSONObject("signer");
+            JSONObject qOut = jsonObjOut.getJSONObject("signer");
+            assertEquals(qIn.toString(), qOut.toString());
         }
     }
 
