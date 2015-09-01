@@ -7,6 +7,7 @@ import org.bch.c3pro.consumer.external.SQSAccess;
 import org.bch.c3pro.consumer.external.SQSListener;
 import org.bch.c3pro.consumer.util.HttpRequest;
 import org.bch.c3pro.consumer.util.Response;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import javax.sql.DataSource;
 import org.junit.Ignore;
@@ -160,8 +161,8 @@ public class ActionsIT {
         } else {
             JSONObject jsonObjIn = new JSONObject(jsonIn);
             JSONObject jsonObjOut = new JSONObject(sb.toString());
-            JSONObject qIn = jsonObjIn.getJSONObject("address");
-            JSONObject qOut = jsonObjOut.getJSONObject("address");
+            JSONArray qIn = jsonObjIn.getJSONArray("address");
+            JSONArray qOut = jsonObjOut.getJSONArray("address");
             assertEquals(qIn.toString(), qOut.toString());
         }
     }
@@ -212,7 +213,7 @@ public class ActionsIT {
 
         // Now we push the questionnaire
         authHeader = "Bearer " + token;
-        resp = http.doPostGeneric(url,jsonIn,authHeader,contentTypeHeader, "PUT");
+        resp = http.doPostGeneric(url,jsonIn,authHeader,contentTypeHeader, "POST");
         assertTrue(resp.getResponseCode() >= 200 && resp.getResponseCode() <= 204);
 
         // And we check that the patient is received properly
@@ -226,8 +227,8 @@ public class ActionsIT {
         } else {
             JSONObject jsonObjIn = new JSONObject(jsonIn);
             JSONObject jsonObjOut = new JSONObject(sb.toString());
-            JSONObject qIn = jsonObjIn.getJSONObject("signer");
-            JSONObject qOut = jsonObjOut.getJSONObject("signer");
+            JSONArray qIn = jsonObjIn.getJSONArray("signer");
+            JSONArray qOut = jsonObjOut.getJSONArray("signer");
             assertEquals(qIn.toString(), qOut.toString());
         }
     }
