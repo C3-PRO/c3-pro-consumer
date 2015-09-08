@@ -235,8 +235,9 @@ public class SQSListener implements MessageListener, Serializable {
         try {
             Contract contract = (Contract) ctx.newJsonParser().parseResource(contractJson);
             id = contract.getId().getIdPart();
-            version = contract.getResourceMetadata().get(ResourceMetadataKeyEnum.VERSION).toString();
+            //version = contract.getResourceMetadata().get(ResourceMetadataKeyEnum.VERSION).toString();
             //version = (String) contract.getResourceMetadata().get("versionId");
+            version = "0";
             startDate = contract.getApplies().getStart();
             system = contract.getSigner().
                     get(0).
