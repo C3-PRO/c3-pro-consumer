@@ -1,6 +1,7 @@
 package org.bch.c3pro.consumer.model;
 
 import javax.persistence.*;
+import java.util.Date;
 
 @Entity
 @Table(name="resource_table")
@@ -36,8 +37,22 @@ private static final long serialVersionUID = 1L;
 	@Column(name = "processed", nullable=true)
 	private String processed = null;
 
+	/**
+	 * The date when the resource was received
+	 */
+	@Column(name = "start_date", nullable=false)
+	private Date startDate = new Date();
+
 	public String getUUID() {
 		return UUID;
+	}
+
+	public Date getStartDate() {
+		return startDate;
+	}
+
+	public void setStartDate(Date startDate) {
+		this.startDate = startDate;
 	}
 
 	public void setUUID(String uUID) {

@@ -3,7 +3,8 @@ CREATE TABLE resource_table (
   json CLOB,
   key CLOB,
   key_id VARCHAR2(40) NOT NULL,
-  processed VARCHAR(700)
+  processed VARCHAR2(700),
+  start_date DATE
 );
 
 CREATE TABLE patient_map (
