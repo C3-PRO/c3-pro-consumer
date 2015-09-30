@@ -262,6 +262,9 @@ public class SQSListener implements MessageListener, Serializable {
             e.printStackTrace();
             throw new C3PROException(e.getMessage(), e);
         }
+        if (id==null) {
+            id = UUID.randomUUID().toString();
+        }
         System.out.println("id:" + id);
         System.out.println("version:" + version);
         System.out.println("startDate:" + startDate.toString());
