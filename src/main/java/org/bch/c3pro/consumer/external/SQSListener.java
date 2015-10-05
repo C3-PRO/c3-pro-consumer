@@ -247,8 +247,24 @@ public class SQSListener implements MessageListener, Serializable {
         try {
             List<PatientMap> maps = this.patientMapAccess.findBySignature(signature);
             if (maps.size()==0) {
-                log.warn("No mapping correspondance for signature " + signature);
-                return null;
+                log.warn("No mapping correspondance for signature " + signature+". Probably the contract has not been " +
+                        "processed yet. We create an entrance anyway and update it when needed");
+                String subjectId=UUID.randomUUID().toString();
+                PatientMap patientMap = new PatientMap();
+                patientMap.setSubjectId(subjectId);
+                patientMap.setId(UUID.randomUUID().toString());
+                patientMap.setSignature(signature);
+                patientMap.setVersionId(null);
+                patientMap.setCode(null);
+                patientMap.setDisplay(null);
+                patientMap.setStartDate(new Date());
+                patientMap.setSystem(null);
+
+                // We store the info. The rest of the contract information will be processed when the contract is
+                // received
+                storeMappingInfo(patientMap);
+                return subjectId;
+
             } else if (maps.size()>1) {
                 log.warn("More than one mapping found for signature " + signature + ". Getting the first one");
             }
@@ -257,6 +273,26 @@ public class SQSListener implements MessageListener, Serializable {
         } catch (Exception e) {
             e.printStackTrace();
             throw new C3PROException(e.getMessage(), e);
+        }
+    }
+
+    private void storeMappingInfo(PatientMap patientMap) throws C3PROException {
+        try {
+            tx.begin();
+            em.persist(patientMap);
+            em.flush();
+            tx.commit();
+        } catch (Exception e) {
+            // If exception it might indicate that we are already in a transactional block. So, we try to persist again
+            // without the transaction
+            try {
+                em.persist(patientMap);
+                em.flush();
+            } catch (Exception e2) {
+                // if this also fails, we are in troubles and raise an exception!
+                e2.printStackTrace();
+                throw new C3PROException("Error storing consent data: " + e.getMessage(), e);
+            }
         }
     }
 
@@ -299,9 +335,7 @@ public class SQSListener implements MessageListener, Serializable {
             e.printStackTrace();
             throw new C3PROException(e.getMessage(), e);
         }
-        if (id==null) {
-            id = UUID.randomUUID().toString();
-        }
+
         System.out.println("id:" + id);
         System.out.println("version:" + version);
         System.out.println("startDate:" + startDate.toString());
@@ -310,31 +344,29 @@ public class SQSListener implements MessageListener, Serializable {
         System.out.println("display:" + display);
         System.out.println("signature:" + signature);
 
-        PatientMap patientMap = new PatientMap();
-        patientMap.setId(id);
+        // Check if the mapping already exists
+        List<PatientMap> patientMaps = patientMapAccess.findBySignature(signature);
+        PatientMap patientMap = null;
+        if (patientMaps.size()==0) {
+            patientMap = new PatientMap();
+            if (id==null) {
+                id = UUID.randomUUID().toString();
+            }
+            patientMap.setId(id);
+            patientMap.setSignature(signature);
+            patientMap.setSubjectId(UUID.randomUUID().toString());
+        } else {
+            patientMap = patientMaps.get(0);
+        }
+
         patientMap.setVersionId(version);
         patientMap.setCode(code);
         patientMap.setDisplay(display);
-        patientMap.setSignature(signature);
         patientMap.setStartDate(startDate);
         patientMap.setSystem(system);
 
         // finally, we generate the subject id that will
-        patientMap.setSubjectId(UUID.randomUUID().toString());
-        try {
-            tx.begin();
-            em.persist(patientMap);
-            em.flush();
-            tx.commit();
-        } catch (Exception e) {
-            e.printStackTrace();
-            try {
-                tx.rollback();
-            } catch (Exception ee) {
-                e.printStackTrace();
-            }
-            throw new C3PROException("Error storing consent data: " + e.getMessage(), e);
-        }
+        storeMappingInfo(patientMap);
 
     }
 
