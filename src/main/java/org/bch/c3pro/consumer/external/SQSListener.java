@@ -262,7 +262,7 @@ public class SQSListener implements MessageListener, Serializable {
 
                 // We store the info. The rest of the contract information will be processed when the contract is
                 // received
-                storeMappingInfo(patientMap);
+                storeMappingInfo(patientMap, false);
                 return subjectId;
 
             } else if (maps.size()>1) {
@@ -276,9 +276,11 @@ public class SQSListener implements MessageListener, Serializable {
         }
     }
 
-    private void storeMappingInfo(PatientMap patientMap) throws C3PROException {
+    private void storeMappingInfo(PatientMap patientMap, boolean b) throws C3PROException {
         try {
-            tx.begin();
+            if (!b) {
+                tx.begin();
+            }
             em.persist(patientMap);
             em.flush();
             tx.commit();
@@ -347,6 +349,7 @@ public class SQSListener implements MessageListener, Serializable {
         // Check if the mapping already exists
         List<PatientMap> patientMaps = patientMapAccess.findBySignature(signature);
         PatientMap patientMap = null;
+        boolean b=false;
         if (patientMaps.size()==0) {
             patientMap = new PatientMap();
             if (id==null) {
@@ -356,6 +359,10 @@ public class SQSListener implements MessageListener, Serializable {
             patientMap.setSignature(signature);
             patientMap.setSubjectId(UUID.randomUUID().toString());
         } else {
+            try {
+                tx.begin();
+                b=true;
+            } catch (Exception e) {}
             patientMap=patientMapAccess.findById(patientMaps.get(0).getId());
         }
 
@@ -366,7 +373,7 @@ public class SQSListener implements MessageListener, Serializable {
         patientMap.setSystem(system);
 
         // finally, we generate the subject id that will
-        storeMappingInfo(patientMap);
+        storeMappingInfo(patientMap, b);
 
     }
 
