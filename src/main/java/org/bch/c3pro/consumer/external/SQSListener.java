@@ -34,6 +34,7 @@ import ca.uhn.fhir.model.primitive.IdDt;
 import org.apache.commons.codec.binary.Base64;
 import org.bch.c3pro.consumer.config.AppConfig;
 import org.bch.c3pro.consumer.data.PatientMapAccess;
+import org.bch.c3pro.consumer.data.ResourceAccess;
 import org.bch.c3pro.consumer.exception.C3PROException;
 import org.bch.c3pro.consumer.model.PatientMap;
 import org.bch.c3pro.consumer.model.Resource;
@@ -68,6 +69,9 @@ public class SQSListener implements MessageListener, Serializable {
 
     @Inject
     protected PatientMapAccess patientMapAccess;
+
+    @Inject
+    protected ResourceAccess resourceAccess;
 
 	@Override
 	public void onMessage(Message messageWrapper) {
@@ -203,6 +207,39 @@ public class SQSListener implements MessageListener, Serializable {
 
         obs.getSubject().setReference("Patient/"+i2b2Subject);
         return ctx.newJsonParser().encodeResourceToString(obs);
+
+    }
+
+    public void reprocess(String id) throws Exception {
+        Resource resource = this.resourceAccess.findById(id);
+        byte [] messageEnc = Base64.decodeBase64(resource.getJson());
+
+        // Get the symetric key as metadata
+        String symKeyBase64 =  resource.getKey(); //messageWrapper.getStringProperty(AppConfig.getProp(AppConfig.SECURITY_METADATAKEY));
+        String publicKeyId = resource.getKeyId(); // messageWrapper.getStringProperty(AppConfig.getProp(AppConfig.SECURITY_METADATAKEY_ID));
+
+
+        publicKeyId = publicKeyId.trim();
+        // We decrypt the secret key of the message using the private key
+        byte [] secretKeyEnc = Base64.decodeBase64(symKeyBase64);
+        byte [] secretKey = decryptSecretKey(secretKeyEnc, publicKeyId);
+
+        // We decrypt the message using the secret key
+        byte [] message = decryptMessage(messageEnc, secretKey);
+        String messageString = new String(message, AppConfig.UTF);
+        String processed = null;
+        try {
+            saveMessage(messageString);
+            tx.begin();
+            resource.setProcessed(null);
+            em.persist(resource);
+            em.flush();
+            tx.commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error(e.getMessage());
+            throw e;
+        }
 
     }
 
@@ -347,6 +384,7 @@ public class SQSListener implements MessageListener, Serializable {
     public void setEntityManager(EntityManager em) {
         this.em = em;
         this.patientMapAccess.setEntityManager(em);
+        this.resourceAccess.setEntityManager(em);
     }
 
 	public static byte [] decryptMessage(byte [] messageEnc, byte[] secretKeyBytes) throws GeneralSecurityException,

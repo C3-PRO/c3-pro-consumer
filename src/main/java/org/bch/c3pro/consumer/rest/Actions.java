@@ -17,6 +17,7 @@ import javax.persistence.PersistenceContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 
 /**
@@ -53,12 +54,26 @@ public class Actions {
     @POST
     @Path("/stop")
     public Response stopService() {
-        log.info("REST /start");
+        log.info("REST /stop");
         SQSAccess sqs = SQSAccess.getInstance();
         try {
             sqs.stopListening();
         } catch (Exception e) {
             log.error("Error stopping listener: " + e.getMessage());
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
+        }
+        return Response.status(Response.Status.OK).build();
+    }
+
+    @POST
+    @Path("/reprocess/{id}")
+    public Response reprocess(@PathParam("id") String rowId) {
+        log.info("REST /reprocess");
+        try {
+            listener.reprocess(rowId);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("Error during reprocessing message: " + e.getMessage());
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
         }
         return Response.status(Response.Status.OK).build();
