@@ -68,8 +68,9 @@ public class Actions {
     @POST
     @Path("/reprocess/{id}")
     public Response reprocess(@PathParam("id") String rowId) {
-        log.info("REST /reprocess");
+        log.info("REST /reprocess/"+rowId);
         try {
+            listener.setEntityManager(em);
             listener.reprocess(rowId);
         } catch (Exception e) {
             e.printStackTrace();
