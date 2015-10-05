@@ -230,11 +230,11 @@ public class SQSListener implements MessageListener, Serializable {
         String processed = null;
         try {
             saveMessage(messageString);
-            tx.begin();
+            //tx.begin();
             resource.setProcessed(null);
             em.persist(resource);
             em.flush();
-            tx.commit();
+            //tx.commit();
         } catch (Exception e) {
             e.printStackTrace();
             log.error(e.getMessage());
