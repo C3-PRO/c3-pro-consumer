@@ -356,7 +356,7 @@ public class SQSListener implements MessageListener, Serializable {
             patientMap.setSignature(signature);
             patientMap.setSubjectId(UUID.randomUUID().toString());
         } else {
-            patientMap=patientMapAccess.findById(patientMap.getId());
+            patientMap=patientMapAccess.findById(patientMaps.get(0).getId());
         }
 
         patientMap.setVersionId(version);
