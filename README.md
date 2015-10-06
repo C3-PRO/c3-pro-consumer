@@ -15,13 +15,11 @@ The system uses the following external resources:
 
 * **SQS queue**: A queue deployed in AWS to consume from. This queue must be configured and populated as described in https://bitbucket.org/ipinyol/c3pro-server/overview.
 * **Oracle DB**: An oracle schema is needed to store the raw data from the SQS. Ideally, this schema should be located in the intranet of an organization.
-* **I2B2 instance**: *TODO* (NOT IMPLEMENTED YET)
-
-The configuration of the DB and the access to SQS is explained in the below sections.
+* **FHIR DSTU-2** compliant system: To store the consumed resourced. In the current release we store the data in i2b2 through the newly created [i2b2 fhir cell](https://bitbucket.org/ihlchip/fhir-i2b2-cell) 
 
 ## Installing Maven, Java && JBoss AS7 ##
 
-The system uses java 7 and we recommend to use JBoss AS7. To install the basic tools in a Debian-based Linux distribution:
+The system uses java 7 and we recommend to use JBoss AS7, although other java-based web servers can be used, like tomcat7. To install the basic tools in a Debian-based Linux distribution:
 
     sudo apt-get clean
     sudo apt-get update
@@ -38,7 +36,7 @@ The system uses an oracle DB to store the raw information extracted form the que
 
 * Run the table creation script: *{{src/main/scripts/create_tables.sql}}*
 
-* Deploy the provided oracle jdbc driver in jBoss:
+* Deploy the provided oracle jdbc driver in jBoss or anywhere accessible through the project:
 
 ```
 #!shell
@@ -60,6 +58,41 @@ $HOME_C3PRO_CONSUMER/cp ojdbc14.jar $JBOSS_HOME/standalone/deployments
 </datasource>
 ```
 
+* **Notes for production deployments** 
+It's not recommended to display raw DB credentials in the configuration files, even when the servers are protected. One possible way is to use security domains to wrap encrypted credentials. For instance:
+  
+```
+#!xml
+
+<datasource jndi-name="java:jboss/datasources/c3proDS" pool-name="c3proDS" enabled="true" use-java-context="true">
+    <connection-url>{{jdbc_connection_to_db}}</connection-url>
+    <driver>ojdbc14.jar</driver>
+    <security>
+        <security-domain>secure-c3pro-credentials</security-domain>
+    </security>
+</datasource>
+```
+
+and in the security domain section:
+
+```
+#!xml
+<security-domain name="secure-c3pro-credentials" cache-type="default">
+   <authentication>
+      <login-module code="org.picketbox.datasource.security.SecureIdentityLoginModule" flag="required">
+          <module-option name="username" value="{{db_username}}"/>
+          <module-option name="password" value="{{ENCRYPTED PASSWORD}}"/>
+       </login-module>
+    </authentication>
+</security-domain>
+```
+
+The encrypted password can be generated running **picketbox** security module as follows:
+
+    java  org.picketbox.datasource.security.SecureIdentityLoginModule {{db_password}}
+
+The output will be the encrypted password to place in the security domain element. Make sure that your CLASS_PATH includes such the appropriate jar file. PICKET BOX is installed installed by default in JBOSS distribution as a module. 
+ 
 ## Building and deploying in DEV ##
 
 Once the project is cloned or download, in the root of the project:
