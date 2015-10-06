@@ -122,7 +122,7 @@ In PROD:
 
 These commands take the resource files located in *src/main/resources/qa* or *src/main/resources/prod* respectively, and place them as the resource files of the deployment.
 
-## Deploying on web server containers different that JBOSS##
+## Deploying on web server containers different than JBOSS##
 
 Generate the war files for the desired environment
 
