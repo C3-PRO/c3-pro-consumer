@@ -15,7 +15,7 @@ The system uses the following external resources:
 
 * **SQS queue**: A queue deployed in AWS to consume from. This queue must be configured and populated as described in https://bitbucket.org/ipinyol/c3pro-server/overview.
 * **Oracle DB**: An oracle schema is needed to store the raw data from the SQS. Ideally, this schema should be located in the intranet of an organization.
-* **FHIR DSTU-2** compliant system: To store the consumed resourced. In the current release we store the data in i2b2 through the newly created [i2b2 fhir cell](https://bitbucket.org/ihlchip/fhir-i2b2-cell) 
+* **FHIR DSTU-2** compliant system: To store the consumed resourced. In the current release we store the data in i2b2 through the newly created [i2b2 fhir cell](https://bitbucket.org/ihlchip/fhir-i2b2-cell).
 
 ## Installing Maven, Java && JBoss AS7 ##
 
@@ -58,8 +58,7 @@ $HOME_C3PRO_CONSUMER/cp ojdbc14.jar $JBOSS_HOME/standalone/deployments
 </datasource>
 ```
 
-* **Notes for production deployments** 
-It's not recommended to display raw DB credentials in the configuration files, even when the servers are protected. One possible way is to use security domains to wrap encrypted credentials. For instance:
+* **Note for production deployments**: It's not recommended to display raw DB credentials in the configuration files, even when the servers are protected. One possible way is to use security domains to wrap encrypted credentials. For instance:
   
 ```
 #!xml
@@ -91,7 +90,7 @@ The encrypted password can be generated running **picketbox** security module as
 
     java  org.picketbox.datasource.security.SecureIdentityLoginModule {{db_password}}
 
-The output will be the encrypted password to place in the security domain element. Make sure that your CLASS_PATH includes such the appropriate jar file. PICKET BOX is installed installed by default in JBOSS distribution as a module. 
+The output will be the encrypted password to place in the security domain element. Make sure that your CLASS_PATH includes the appropriate jar file. PICKET BOX is included by default in JBOSS AS7 distribution as a module. 
  
 ## Building and deploying in DEV ##
 
@@ -122,6 +121,18 @@ In PROD:
     mvn jboss-as:deploy
 
 These commands take the resource files located in *src/main/resources/qa* or *src/main/resources/prod* respectively, and place them as the resource files of the deployment.
+
+## Deploying on web server containers different that JBOSS##
+
+Generate the war files for the desired environment
+
+    mvn clean package
+    mvn clean package -Pqa
+    mvn clean package -Pprod
+
+and copy the generated war located in **target/c3pro-consumer.war** to the corresponding deployment directory. In **tomcat7** the default directory is:
+
+    /var/lib/tomcat7/webapps/
 
 ## AWS SDK credentials ##
 
