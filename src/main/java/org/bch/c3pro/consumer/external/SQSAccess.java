@@ -2,36 +2,18 @@ package org.bch.c3pro.consumer.external;
 
 import com.amazon.sqs.javamessaging.SQSConnection;
 import com.amazon.sqs.javamessaging.SQSConnectionFactory;
-import com.amazonaws.services.sqs.model.MessageAttributeValue;
-import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.bch.c3pro.consumer.config.AppConfig;
 import org.bch.c3pro.consumer.exception.C3PROException;
-import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
-import com.amazonaws.services.sqs.AmazonSQS;
-import com.amazonaws.services.sqs.AmazonSQSClient;
-import com.amazonaws.services.sqs.model.SendMessageRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.jms.Session;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
-
-import java.io.UnsupportedEncodingException;
-import java.security.InvalidKeyException;
-import java.security.PublicKey;
-import java.security.SecureRandom;
 
 /**
  * Created by CH176656 on 5/1/2015.
@@ -41,8 +23,7 @@ public class SQSAccess {
     private static SQSAccess sqsAccessSingleton = null;
 
 	private SQSConnection connection;
-
-    Logger log = LoggerFactory.getLogger(SQSAccess.class);
+    Log log = LogFactory.getLog(SQSAccess.class);
 
     // just to defeat instantiation
     protected SQSAccess() {}

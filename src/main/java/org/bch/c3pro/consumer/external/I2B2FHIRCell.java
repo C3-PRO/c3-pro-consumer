@@ -14,6 +14,7 @@ import java.io.IOException;
  */
 public class I2B2FHIRCell {
 
+    // TODO: Consider version to determine the end-point
     private static final String HTTP_TYPE_CONSUMES = "application/json";
 
     @Inject
@@ -21,6 +22,11 @@ public class I2B2FHIRCell {
 
     public Response postQuestionnaireAnswers(String qa) throws C3PROException, IOException {
         return postResource(qa, AppConfig.getProp(AppConfig.ENDPOINT_FHIR_I2B2_QA));
+    }
+
+    // TODO: update endpoint properly
+    public Response postQuestionnaireResponse(String qr) throws C3PROException, IOException {
+        return postResource(qr, AppConfig.getProp(AppConfig.ENDPOINT_FHIR_I2B2_QA));
     }
 
     public Response postObservation(String obs) throws C3PROException, IOException {

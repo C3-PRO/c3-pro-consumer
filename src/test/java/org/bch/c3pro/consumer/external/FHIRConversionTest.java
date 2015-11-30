@@ -1,6 +1,7 @@
 package org.bch.c3pro.consumer.external;
 
 import org.bch.c3pro.consumer.exception.C3PROException;
+import org.json.JSONException;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -129,7 +130,7 @@ public class FHIRConversionTest {
     public void replaceSubjectIdObsTest() throws Exception {
         SQSListenerTest test = new SQSListenerTest();
         test.subjectId=this.goodSubjectId;
-        String result = test.replaceSubjectIdObs(baseFHIRObs);
+        String result = test.replaceSubjectReference(baseFHIRObs);
         assertEquals(baseFHIROsGood, result);
     }
 
@@ -137,7 +138,7 @@ public class FHIRConversionTest {
     public void replaceSubjectIdQATest() throws Exception {
         SQSListenerTest test = new SQSListenerTest();
         test.subjectId=this.goodSubjectId;
-        String result = test.replaceSubjectIdQA(baseFHIRQA);
+        String result = test.replaceSubjectReference(baseFHIRQA);
         System.out.println(result);
         System.out.println(baseFHIRQAGood);
         assertEquals(baseFHIRQAGood, result);
@@ -146,12 +147,8 @@ public class FHIRConversionTest {
     private class SQSListenerTest extends SQSListener {
         public String subjectId;
 
-        public String replaceSubjectIdObsTest(String message) throws C3PROException {
-            return this.replaceSubjectIdObs(message);
-        }
-
-        public String replaceSubjectIdQATest(String message) throws C3PROException {
-            return this.replaceSubjectIdQA(message);
+        public String replaceSubjectReferenceTest(String message) throws C3PROException, JSONException {
+            return this.replaceSubjectReference(message);
         }
 
         @Override

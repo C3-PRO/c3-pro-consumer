@@ -1,12 +1,12 @@
 package org.bch.c3pro.consumer.rest;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.bch.c3pro.consumer.config.AppConfig;
 import org.bch.c3pro.consumer.external.SQSAccess;
 import org.bch.c3pro.consumer.external.SQSListener;
 import org.jboss.resteasy.util.Base64;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.ejb.Stateful;
 import javax.enterprise.context.RequestScoped;
@@ -28,7 +28,7 @@ import javax.ws.rs.core.Response;
 @Stateful
 public class Actions {
 
-    Logger log = LoggerFactory.getLogger(Actions.class);
+    Log log = LogFactory.getLog(Actions.class);
 
     @PersistenceContext(unitName="fhir-resource")
     private EntityManager em;
