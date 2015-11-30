@@ -2,7 +2,10 @@ package org.bch.c3pro.consumer.external;
 
 import org.bch.c3pro.consumer.exception.C3PROException;
 import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.Test;
+import org.skyscreamer.jsonassert.JSONAssert;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -131,7 +134,9 @@ public class FHIRConversionTest {
         SQSListenerTest test = new SQSListenerTest();
         test.subjectId=this.goodSubjectId;
         String result = test.replaceSubjectReference(baseFHIRObs);
-        assertEquals(baseFHIROsGood, result);
+        JSONObject resultJSON = new JSONObject(result);
+        JSONAssert.assertEquals(baseFHIROsGood, resultJSON, false);
+
     }
 
     @Test
@@ -141,7 +146,8 @@ public class FHIRConversionTest {
         String result = test.replaceSubjectReference(baseFHIRQA);
         System.out.println(result);
         System.out.println(baseFHIRQAGood);
-        assertEquals(baseFHIRQAGood, result);
+        JSONObject resultJSON = new JSONObject(result);
+        JSONAssert.assertEquals(baseFHIRQAGood, resultJSON, false);
     }
 
     private class SQSListenerTest extends SQSListener {

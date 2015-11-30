@@ -204,7 +204,13 @@
             <artifactId>json</artifactId>
             <version>${json.version}</version>
         </dependency>
-    
+
+        <dependency>
+            <groupId>org.skyscreamer</groupId>
+            <artifactId>jsonassert</artifactId>
+            <version>1.2.3</version>
+        </dependency>
+
 		<dependency>
             <groupId>org.jboss.spec.javax.servlet</groupId>
             <artifactId>jboss-servlet-api_3.0_spec</artifactId>

@@ -149,6 +149,7 @@
     <orderEntry type="library" name="Maven: commons-io:commons-io:2.0.1" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: javax.servlet:javax.servlet-api:3.0.1" level="project" />
     <orderEntry type="library" name="Maven: org.json:json:20090211" level="project" />
+    <orderEntry type="library" name="Maven: org.skyscreamer:jsonassert:1.2.3" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.jboss.spec.javax.servlet:jboss-servlet-api_3.0_spec:1.0.0.Final" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-impl-maven:1.0.0-beta-7" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.jboss.shrinkwrap:shrinkwrap-api:1.0.1" level="project" />
