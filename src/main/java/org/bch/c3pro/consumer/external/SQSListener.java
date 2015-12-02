@@ -44,11 +44,8 @@ import org.json.JSONException;
 public class SQSListener implements MessageListener, Serializable {
 	private Map<String, PrivateKey> privateKeyMap = new HashMap<>();
 
-    private final static String FHIR_OBSERVATION = "Observation";
-    private final static String FHIR_QR = "QuestionnaireResponse";
-    private final static String FHIR_QA = "QuestionnaireAnswers";
-    private final static String FHIR_CON = "Contract";
     private final static String FHIR_PATIENT = "Patient";
+    private final static String FHIR_CONTRACT = "Contract";
     private final static String FHIR_RESOURCE_TYPE = "resourceType";
 
     private final static String FHIR_CONTRACT_SIGNER = "signer";
@@ -95,6 +92,11 @@ public class SQSListener implements MessageListener, Serializable {
 			String symKeyBase64 = messageWrapper.getStringProperty(AppConfig.getProp(AppConfig.SECURITY_METADATAKEY));
             String publicKeyId = messageWrapper.getStringProperty(AppConfig.getProp(AppConfig.SECURITY_METADATAKEY_ID));
 
+            // Get the FHIR version. If property is not informed, null will be returned
+            String version = messageWrapper.getStringProperty(AppConfig.getProp(AppConfig.FHIR_METADATA_VERSION));
+            if (version == null) {
+                version = AppConfig.getProp(AppConfig.FHIR_VERSION_DEFAULT);
+            }
 
             publicKeyId = publicKeyId.trim();
 			// We decrypt the secret key of the message using the private key
@@ -106,13 +108,13 @@ public class SQSListener implements MessageListener, Serializable {
 			String messageString = new String(message, AppConfig.UTF);
             String processed = null;
             try {
-                saveMessage(messageString);
+                saveMessage(messageString, version);
             } catch (Exception e) {
                 e.printStackTrace();
                 log.error(e.getMessage());
                 processed = e.getMessage();
             }
-            saveRawMessage(null, txtMessage.getText(), symKeyBase64, publicKeyId, processed);
+            saveRawMessage(null, txtMessage.getText(), symKeyBase64, publicKeyId, processed, version);
             if (processed!=null) {
                 log.warn("Raw message stored but an error occurred while processing the message. Please, check logs");
             }
@@ -142,38 +144,27 @@ public class SQSListener implements MessageListener, Serializable {
 		}
 	}
 
-    protected void saveMessage(String messageString) throws C3PROException {
+    protected void saveMessage(String messageString, String version) throws C3PROException {
         System.out.println(messageString);
         String resourceType = this.getResourceType(messageString);
         Response resp = null;
 
         try {
             log.info("Saving " + resourceType + " fhir resource");
-            switch(resourceType) {
-                case FHIR_QA:
-                    messageString = replaceSubjectReference(messageString);
-                    resp = fhirCell.postQuestionnaireAnswers(messageString);
-                    break;
-                case FHIR_QR:
-                    messageString = replaceSubjectReference(messageString);
-                    resp = fhirCell.postQuestionnaireResponse(messageString);
-                    break;
-                case FHIR_CON:
-                    storeContract(messageString);
-                    //resp = fhirCell.postContract(messageString);
-                    break;
-                case FHIR_OBSERVATION:
-                    messageString = replaceSubjectReference(messageString);
-                    resp = fhirCell.postObservation(messageString);
-                    break;
-                case FHIR_PATIENT:
-                    String [] ret = replaceSubjectIdPatient(messageString);
-                    resp = fhirCell.putPatient(ret[0], ret[1]);
-                    break;
-                default:
-                    throw new C3PROException("FHIR Resource " + resourceType + " not supported");
+            if (resourceType.equals(FHIR_PATIENT)) {
+                // If it's a patient resource, we PUT the resource to the fhir cell
+                String [] ret = replaceSubjectIdPatient(messageString);
+                String resource = ret[0];
+                String idResource = ret[1];
+                resp = fhirCell.putResource(resource, resourceType, version, idResource);
+            } else if (resourceType.equals(FHIR_CONTRACT)) {
+                // If we have a contract resource, we store it in the internal db
+                storeContract(messageString);
+            } else {
+                // Otherwise, we POST the resource to the fhir cell
+                String resource = replaceSubjectReference(messageString);
+                resp = fhirCell.postResource(resource, resourceType, version);
             }
-
         } catch (IOException e) {
             e.printStackTrace();
             throw new C3PROException(e.getMessage(), e);
@@ -219,8 +210,8 @@ public class SQSListener implements MessageListener, Serializable {
         byte [] messageEnc = Base64.decodeBase64(resource.getJson().getBytes());
 
         // Get the symetric key as metadata
-        String symKeyBase64 =  resource.getKey(); //messageWrapper.getStringProperty(AppConfig.getProp(AppConfig.SECURITY_METADATAKEY));
-        String publicKeyId = resource.getKeyId(); // messageWrapper.getStringProperty(AppConfig.getProp(AppConfig.SECURITY_METADATAKEY_ID));
+        String symKeyBase64 =  resource.getKey();
+        String publicKeyId = resource.getKeyId();
 
 
         publicKeyId = publicKeyId.trim();
@@ -233,7 +224,7 @@ public class SQSListener implements MessageListener, Serializable {
         String messageString = new String(message, AppConfig.UTF);
         String processed = null;
         try {
-            saveMessage(messageString);
+            saveMessage(messageString, resource.getFhirVersion());
             //tx.begin();
             resource.setProcessed(null);
             em.persist(resource);
@@ -397,7 +388,8 @@ public class SQSListener implements MessageListener, Serializable {
 
     }
 
-    protected void saveRawMessage(String uuid, String message, String key, String keyId, String processed) throws C3PROException {
+    protected void saveRawMessage(String uuid, String message, String key, String keyId, String processed,
+                                  String version) throws C3PROException {
         String newUUID = uuid;
         if (this.em == null) {
             log.warn("EntityManager is null. The raw message will not be stored.");
@@ -411,6 +403,7 @@ public class SQSListener implements MessageListener, Serializable {
         res.setKey(key);
         res.setKeyId(keyId);
         res.setProcessed(processed);
+        res.setFhirVersion(version);
         try {
             tx.begin();
             em.persist(res);

@@ -14,43 +14,50 @@ import java.io.IOException;
  */
 public class I2B2FHIRCell {
 
-    // TODO: Consider version to determine the end-point
     private static final String HTTP_TYPE_CONSUMES = "application/json";
 
     @Inject
     private HttpRequest httpRequest;
 
-    public Response postQuestionnaireAnswers(String qa) throws C3PROException, IOException {
-        return postResource(qa, AppConfig.getProp(AppConfig.ENDPOINT_FHIR_I2B2_QA));
+    /**
+     * Performs a PUT call over a FHIR resource
+     * @param resource      The payoff resource
+     * @param resourceName  The resource type, i.e. Patient
+     * @param version       The FHIR version, i.e. DSTU2-1.0.2, DSTU2-0.9.0
+     * @param idResource    The id of the resource. This will be part of the
+     * @return
+     * @throws C3PROException
+     * @throws IOException
+     */
+    public Response putResource(String resource, String resourceName, String version, String idResource)
+            throws C3PROException, IOException {
+        String endPoint = buildEndPointwithVersion(resourceName, version);
+        return put(resource, endPoint, "/"+idResource);
     }
 
-    // TODO: update endpoint properly
-    public Response postQuestionnaireResponse(String qr) throws C3PROException, IOException {
-        return postResource(qr, AppConfig.getProp(AppConfig.ENDPOINT_FHIR_I2B2_QA));
+    public Response postResource(String resource, String resourceName, String version)
+            throws C3PROException, IOException {
+        String endPoint = buildEndPointwithVersion(resourceName, version);
+        return post(resource, endPoint);
     }
 
-    public Response postObservation(String obs) throws C3PROException, IOException {
-        return postResource(obs, AppConfig.getProp(AppConfig.ENDPOINT_FHIR_I2B2_OBS));
+    private String buildEndPointwithVersion(String resourceName, String version) throws C3PROException {
+        if (version == null) {
+            version = "";
+        }
+        String endPointPattern = AppConfig.getProp(AppConfig.ENDPOINT_FHIR_I2B2_ROOT);
+        return String.format(endPointPattern, version) + "/" + resourceName;
     }
 
-    public Response postContract(String con) throws C3PROException, IOException {
-        return postResource(con, AppConfig.getProp(AppConfig.ENDPOINT_FHIR_I2B2_CON));
-    }
-
-    public Response putPatient(String patient, String patientId) throws C3PROException, IOException {
-        return putResource(patient, AppConfig.getProp(AppConfig.ENDPOINT_FHIR_I2B2_PAT), "/"+patientId);
-    }
-
-    private Response postResource(String resource, String endPoint) throws C3PROException, IOException {
-        String url = generateURL(endPoint);
-        Response resp = this.httpRequest.doPostGeneric(url, resource, "", HTTP_TYPE_CONSUMES);
-        return resp;
-
-    }
-
-    private Response putResource(String resource, String endPoint, String extra) throws C3PROException, IOException {
+    private Response put(String resource, String endPoint, String extra) throws C3PROException, IOException {
         String url = generateURL(endPoint) + extra;
         Response resp = this.httpRequest.doPostGeneric(url, resource, "", HTTP_TYPE_CONSUMES, "PUT");
+        return resp;
+    }
+
+    private Response post(String resource, String endPoint) throws C3PROException, IOException {
+        String url = generateURL(endPoint);
+        Response resp = this.httpRequest.doPostGeneric(url, resource, "", HTTP_TYPE_CONSUMES);
         return resp;
     }
 

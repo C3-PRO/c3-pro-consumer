@@ -43,6 +43,9 @@ private static final long serialVersionUID = 1L;
 	@Column(name = "start_date", nullable=false)
 	private Date startDate = new Date();
 
+	@Column(name = "fhir_version", nullable = false)
+	private String fhirVersion;
+
 	public String getUUID() {
 		return UUID;
 	}
@@ -90,4 +93,12 @@ private static final long serialVersionUID = 1L;
     public void setProcessed(String processed) {
         this.processed = processed;
     }
+
+	public String getFhirVersion() {
+		return fhirVersion;
+	}
+
+	public void setFhirVersion(String fhirVersion) {
+		this.fhirVersion = fhirVersion;
+	}
 }

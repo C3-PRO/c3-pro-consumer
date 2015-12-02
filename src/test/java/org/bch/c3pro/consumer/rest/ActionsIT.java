@@ -266,17 +266,18 @@ public class ActionsIT {
             this.withDB=withDB;
         }
         @Override
-        protected void saveMessage(String messageString) {
+        protected void saveMessage(String messageString, String version ) {
             ActionsIT.sb.append(messageString);
         }
 
         @Override
-        protected void saveRawMessage(String uuid, String message, String key, String keyId, String processed) throws C3PROException {
+        protected void saveRawMessage(String uuid, String message, String key, String keyId, String processed,
+                                      String version) throws C3PROException {
             ActionsIT.json.append(message);
             ActionsIT.uuid.append(uuid);
             ActionsIT.key.append(key);
             if (this.withDB) {
-                super.saveRawMessage(uuid, message, key, null, null);
+                super.saveRawMessage(uuid, message, key, null, null, null);
             }
         }
     }
