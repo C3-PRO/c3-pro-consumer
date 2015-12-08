@@ -305,7 +305,8 @@ public class SQSListener implements MessageListener, Serializable {
         try {
             JSONObject contractJSON = new JSONObject(message);
             // Get resource id
-            id = contractJSON.getString(FHIR_RESOURCE_ID);
+
+            id = contractJSON.optString(FHIR_RESOURCE_ID, null);
 
             // Get applies date
             JSONObject applies = contractJSON.getJSONObject(FHIR_CONTRACT_APPLIES);
