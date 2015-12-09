@@ -189,7 +189,7 @@ There is one configuration parameters file for each environment (dev, qa and pro
 
 ### SQS configuration access ###
 
-**url connection to Amazon SQS queue**
+**Url connection to Amazon SQS queue**
 
     app.aws.sqs.url=https://sqs.us-west-2.amazonaws.com/875222989376/testQ
 
@@ -202,26 +202,35 @@ There is one configuration parameters file for each environment (dev, qa and pro
 
     app.aws.sqs.profile=sqsqueue
 
+
 **Amazon region where the SQS is deployed**
 
     app.aws.sqs.region=us-west-2
+
 
 ### Property names of the Queue message (should not be changed! or changed in tune with the Research Kit App) ###
 They are the property names of the messages in the queue
 
 **The property name that holds the private symmetric AES key**
+
     app.security.metadatakey=pkey
 
+
 **The property name that holds the public key id used to encrypt the private symmetric AES key**
+
     app.security.metadatakeyid=pkey_id
 
+
 **The property name that holds the fhir version**
+
     app.fhir.metadata.version=version
+
 
 **The default version of fhir in case the version is not informed in the queue message**
     app.fhir.version.default=0.5.0
 
 ### Encryption parameters (should not be changed! or changed in tune with the Research Kit App and the c3pro-server) ###
+
 
     app.security.privatekey.algorithm=RSA/ECB/OAEPWithSHA1AndMGF1Padding
     app.security.privatekey.basealgorithm=RSA
@@ -231,7 +240,9 @@ They are the property names of the messages in the queue
     app.security.privatekey.filename=private-c3pro.der
     app.security.privatekey.basepath=/home/vagrant/.c3pro/
 
+
 ### Connection to the running i2b2 instance ###
+
 
     app.host.fhir.i2b2=127.0.0.1
     app.endpoint.fhir.i2b2.root=/fhir-i2b2/%s/fhir
@@ -239,6 +250,7 @@ They are the property names of the messages in the queue
     app.network.protocol.fhir.i2b2=http
 
 ### Integration test variables (optional)###
+
 
     app.c3pro.server.host=ec2-52-11-82-72.us-west-2.compute.amazonaws.com
     app.c3pro.server.port=8080
