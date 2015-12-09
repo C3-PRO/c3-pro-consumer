@@ -189,21 +189,21 @@ There is one configuration parameters file for each environment (dev, qa and pro
 
 ### SQS configuration access ###
 
-**Url connection to Amazon SQS queue**
+*Url connection to Amazon SQS queue*
 
     app.aws.sqs.url=https://sqs.us-west-2.amazonaws.com/875222989376/testQ
 
-**name of the SQS**
+*name of the SQS*
 
     app.aws.sqs.name=testQ
 
 
-**Amazon profile for the SQS connection**
+*Amazon profile for the SQS connection*
 
     app.aws.sqs.profile=sqsqueue
 
 
-**Amazon region where the SQS is deployed**
+*Amazon region where the SQS is deployed*
 
     app.aws.sqs.region=us-west-2
 
@@ -211,22 +211,24 @@ There is one configuration parameters file for each environment (dev, qa and pro
 ### Property names of the Queue message (should not be changed! or changed in tune with the Research Kit App) ###
 They are the property names of the messages in the queue
 
-**The property name that holds the private symmetric AES key**
+*The property name that holds the private symmetric AES key*
 
     app.security.metadatakey=pkey
 
 
-**The property name that holds the public key id used to encrypt the private symmetric AES key**
+*The property name that holds the public key id used to encrypt the private symmetric AES key*
 
     app.security.metadatakeyid=pkey_id
 
 
-**The property name that holds the fhir version**
+*The property name that holds the fhir version*
 
     app.fhir.metadata.version=version
 
 
-**The default version of fhir in case the version is not informed in the queue message**
+*The default version of fhir in case the version is not informed in the queue message*
+
+
     app.fhir.version.default=0.5.0
 
 ### Encryption parameters (should not be changed! or changed in tune with the Research Kit App and the c3pro-server) ###
