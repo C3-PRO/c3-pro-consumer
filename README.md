@@ -15,7 +15,7 @@ The system uses the following external resources:
 
 * **SQS queue**: A queue deployed in AWS to consume from. This queue must be configured and populated as described in https://bitbucket.org/ipinyol/c3pro-server/overview.
 * **Oracle DB**: An oracle schema is needed to store the raw data from the SQS. Ideally, this schema should be located in the intranet of an organization.
-* **FHIR DSTU-2** compliant system: To store the consumed resourced. In the current release we store the data in i2b2 through the newly created [i2b2 fhir cell](https://bitbucket.org/ihlchip/fhir-i2b2-cell).
+* **FHIR DSTU2-1.0.2 or DSTU2-0.5.0** compliant system: To store the consumed resourced. In the current release we store the data in i2b2 through the newly created [i2b2 fhir cell](https://bitbucket.org/ihlchip/fhir-i2b2-cell).
 
 ## Installing Maven, Java && JBoss AS7 ##
 
@@ -178,3 +178,57 @@ These files will be generated:
     ~/.c3pro/{{new UUID}}/private-c3pro.der
 
 If this private key is lost, it won't be possible to recuperate the messages in the queue.
+
+## Configuration Parameters ##
+
+There is one configuration parameters file for each environment (dev, qa and prod). They are located here:
+
+    src/main/resources/dev/org/bch/c3pro/consumer/config/config.properties
+    src/main/resources/qa/org/bch/c3pro/consumer/config/config.properties
+    src/main/resources/prod/org/bch/c3pro/consumer/config/config.properties
+
+### SQS configuration access ###
+
+* url connection to Amazon SQS queue *
+
+    app.aws.sqs.url=https://sqs.us-west-2.amazonaws.com/875222989376/testQ
+
+* name of the SQS *
+
+    app.aws.sqs.name=testQ
+
+
+* Amazon profile for the SQS connection *
+
+    app.aws.sqs.profile=sqsqueue
+
+* Amazon region where the SQS is deployed
+    app.aws.sqs.region=us-west-2
+
+# String properties found in the sqs messages
+app.security.metadatakey=pkey
+app.security.metadatakeyid=pkey_id
+app.fhir.metadata.version=version
+
+app.fhir.version.default=0.5.0
+
+app.security.privatekey.algorithm=RSA/ECB/OAEPWithSHA1AndMGF1Padding
+app.security.privatekey.basealgorithm=RSA
+app.security.secretkey.algorithm=AES/CBC/PKCS5Padding
+app.security.secretkey.basealgorithm=AES
+app.security.secretkey.size=16
+app.security.privatekey.filename=private-c3pro.der
+app.security.privatekey.basepath=/home/vagrant/.c3pro/
+
+app.host.fhir.i2b2=127.0.0.1
+app.endpoint.fhir.i2b2.root=/fhir-i2b2/%s/fhir
+app.port.fhir.i2b2=9090
+app.network.protocol.fhir.i2b2=http
+
+#Variables for Integration Tests
+app.c3pro.server.host=ec2-52-11-82-72.us-west-2.compute.amazonaws.com
+app.c3pro.server.port=8080
+app.c3pro.server.transport=http
+app.authfile.c3pro.server=[JBOSS_HOME]/standalone/configuration/credentials.c3pro
+
+app.c3pro.consumer.datasourcefile=[JBOSS_HOME]/standalone/configuration/jdbc.c3pro
