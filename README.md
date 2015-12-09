@@ -189,23 +189,24 @@ There is one configuration parameters file for each environment (dev, qa and pro
 
 ### SQS configuration access ###
 
-* url connection to Amazon SQS queue *
+*url connection to Amazon SQS queue*
 
     app.aws.sqs.url=https://sqs.us-west-2.amazonaws.com/875222989376/testQ
 
-* name of the SQS *
+*name of the SQS*
 
     app.aws.sqs.name=testQ
 
 
-* Amazon profile for the SQS connection *
+*Amazon profile for the SQS connection*
 
     app.aws.sqs.profile=sqsqueue
 
-* Amazon region where the SQS is deployed
+* Amazon region where the SQS is deployed*
+
     app.aws.sqs.region=us-west-2
 
-# String properties found in the sqs messages
+
 app.security.metadatakey=pkey
 app.security.metadatakeyid=pkey_id
 app.fhir.metadata.version=version
