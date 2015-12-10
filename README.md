@@ -233,26 +233,54 @@ They are the property names of the messages in the queue
 
 ### Encryption parameters (should not be changed! or changed in tune with the Research Kit App and the c3pro-server) ###
 
+*The asymmetric full algorithm used to encrypt and decrypt the symetric random key
 
     app.security.privatekey.algorithm=RSA/ECB/OAEPWithSHA1AndMGF1Padding
+
+*The asymmetric BASE algorithm used to encrypt and decrypt the symmetric random key*
     app.security.privatekey.basealgorithm=RSA
+
+*The symmetric full algorithm used to encrypt and decrypt resources*
+
     app.security.secretkey.algorithm=AES/CBC/PKCS5Padding
+
+
+*The symmetric BASE algorithm used to encrypt and decrypt resources*
     app.security.secretkey.basealgorithm=AES
+
+*The key size in bytes of the random symmetric key*
     app.security.secretkey.size=16
+
+*The private key file name*
     app.security.privatekey.filename=private-c3pro.der
+
+*The private key base path name*
+*The complete path where will be 'app.security.privatekey.basepath'/pkey_id/'app.security.privatekey.filename'*
+*where pkey_id is the key id*
+
     app.security.privatekey.basepath=/home/vagrant/.c3pro/
 
 
-### Connection to the running i2b2 instance ###
+### End point and connection information to the running fhir compliant instance. In this case, the i2b2 fhir cell ###
 
-
+*The host name*
     app.host.fhir.i2b2=127.0.0.1
+
+*The end point pattern. The %s will be replaced by the corresponding fhir version*
+*For instance, if the version received in the queue message is 1.0.2, under the above settings the end point will be:*
+*/fhir-i2b2/1.0.2/fhir*
+
     app.endpoint.fhir.i2b2.root=/fhir-i2b2/%s/fhir
+
+*The connection port*
+
     app.port.fhir.i2b2=9090
+
+*The transport protocol*
+
     app.network.protocol.fhir.i2b2=http
 
 ### Integration test variables (optional)###
-
 
     app.c3pro.server.host=ec2-52-11-82-72.us-west-2.compute.amazonaws.com
     app.c3pro.server.port=8080
