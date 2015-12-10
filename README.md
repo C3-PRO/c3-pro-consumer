@@ -257,7 +257,7 @@ They are the property names of the messages in the queue
 
     app.host.fhir.i2b2=127.0.0.1
 
-*The end points. this is changed in the new version
+*The end points. this is changed in the new version*
 
     app.endpoint.fhir.i2b2.qa=/fhir-i2b2/fhir/QuestionnaireAnswers
     app.endpoint.fhir.i2b2.obs=/fhir-i2b2/fhir/Observation
