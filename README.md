@@ -15,7 +15,7 @@ The system uses the following external resources:
 
 * **SQS queue**: A queue deployed in AWS to consume from. This queue must be configured and populated as described in https://bitbucket.org/ipinyol/c3pro-server/overview.
 * **Oracle DB**: An oracle schema is needed to store the raw data from the SQS. Ideally, this schema should be located in the intranet of an organization.
-* **FHIR DSTU-2** compliant system: To store the consumed resourced. In the current release we store the data in i2b2 through the newly created [i2b2 fhir cell](https://bitbucket.org/ihlchip/fhir-i2b2-cell).
+* **FHIR DSTU2-0.5.0 compliant system: To store the consumed resourced. In the current release we store the data in i2b2 through the newly created [i2b2 fhir cell](https://bitbucket.org/ihlchip/fhir-i2b2-cell).
 
 ## Installing Maven, Java && JBoss AS7 ##
 
