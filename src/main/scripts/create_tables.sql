@@ -4,7 +4,8 @@ CREATE TABLE resource_table (
   key CLOB,
   key_id VARCHAR2(40) NOT NULL,
   processed VARCHAR2(700),
-  start_date DATE
+  start_date DATE,
+  fhir_version VARCHAR2(40) NOT NULL
 );
 
 CREATE TABLE patient_map (

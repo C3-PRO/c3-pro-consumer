@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 import javax.crypto.BadPaddingException;
@@ -24,14 +25,9 @@ import javax.jms.TextMessage;
 import javax.persistence.EntityManager;
 import javax.transaction.UserTransaction;
 
-import ca.uhn.fhir.context.FhirContext;
-import ca.uhn.fhir.model.api.ResourceMetadataKeyEnum;
-import ca.uhn.fhir.model.dstu2.resource.Contract;
-import ca.uhn.fhir.model.dstu2.resource.Observation;
-import ca.uhn.fhir.model.dstu2.resource.Patient;
-import ca.uhn.fhir.model.dstu2.resource.QuestionnaireAnswers;
-import ca.uhn.fhir.model.primitive.IdDt;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.bch.c3pro.consumer.config.AppConfig;
 import org.bch.c3pro.consumer.data.PatientMapAccess;
 import org.bch.c3pro.consumer.data.ResourceAccess;
@@ -39,27 +35,38 @@ import org.bch.c3pro.consumer.exception.C3PROException;
 import org.bch.c3pro.consumer.model.PatientMap;
 import org.bch.c3pro.consumer.model.Resource;
 import org.bch.c3pro.consumer.util.Response;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import org.json.JSONException;
-import org.slf4j.LoggerFactory;
-import org.slf4j.Logger;
 
 @Default
 public class SQSListener implements MessageListener, Serializable {
 	private Map<String, PrivateKey> privateKeyMap = new HashMap<>();
 
-    private final static String FHIR_OBSERVATION = "Observation";
-    private final static String FHIR_QA = "QuestionnaireAnswers";
-    private final static String FHIR_CON = "Contract";
     private final static String FHIR_PATIENT = "Patient";
+    private final static String FHIR_CONTRACT = "Contract";
     private final static String FHIR_RESOURCE_TYPE = "resourceType";
+
+    private final static String FHIR_CONTRACT_SIGNER = "signer";
+    private final static String FHIR_CONTRACT_APPLIES = "applies";
+    private final static String FHIR_CONTRACT_APPLIES_START = "start";
+    private final static String FHIR_CONTRACT_SIGNER_SIGNATURE= "signature";
+    private final static String FHIR_CONTRACT_SIGNER_TYPE = "type";
+    private final static String FHIR_CONTRACT_SIGNER_TYPE_CODE = "code";
+    private final static String FHIR_CONTRACT_SIGNER_TYPE_SYSTEM = "system";
+    private final static String FHIR_CONTRACT_SIGNER_TYPE_DISPLAY = "display";
+
+    private final static String FHIR_RESOURCE_ID = "id";
+    private final static String FHIR_RESOURCE_SUBJECT = "subject";
+    private final static String FHIR_RESOURCE_REFERENCE = "reference";
+
+    private final static String FHIR_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SS";
 
     private EntityManager em = null;
 
-    protected FhirContext ctx = FhirContext.forDstu2();
 
-	Logger log = LoggerFactory.getLogger(SQSListener.class);
+    Log log = LogFactory.getLog(SQSListener.class);
 
     @javax.annotation.Resource
     UserTransaction tx;
@@ -79,16 +86,21 @@ public class SQSListener implements MessageListener, Serializable {
 			TextMessage txtMessage = ( TextMessage ) messageWrapper;
 
 	        // Get the body message 
-			byte [] messageEnc = Base64.decodeBase64(txtMessage.getText());
+			byte [] messageEnc = Base64.decodeBase64(txtMessage.getText().getBytes());
 
 			// Get the symetric key as metadata
 			String symKeyBase64 = messageWrapper.getStringProperty(AppConfig.getProp(AppConfig.SECURITY_METADATAKEY));
             String publicKeyId = messageWrapper.getStringProperty(AppConfig.getProp(AppConfig.SECURITY_METADATAKEY_ID));
 
+            // Get the FHIR version. If property is not informed, null will be returned
+            String version = messageWrapper.getStringProperty(AppConfig.getProp(AppConfig.FHIR_METADATA_VERSION));
+            if (version == null) {
+                version = AppConfig.getProp(AppConfig.FHIR_VERSION_DEFAULT);
+            }
 
             publicKeyId = publicKeyId.trim();
 			// We decrypt the secret key of the message using the private key
-			byte [] secretKeyEnc = Base64.decodeBase64(symKeyBase64);
+			byte [] secretKeyEnc = Base64.decodeBase64(symKeyBase64.getBytes());
 			byte [] secretKey = decryptSecretKey(secretKeyEnc, publicKeyId);
 
 			// We decrypt the message using the secret key
@@ -96,13 +108,13 @@ public class SQSListener implements MessageListener, Serializable {
 			String messageString = new String(message, AppConfig.UTF);
             String processed = null;
             try {
-                saveMessage(messageString);
+                saveMessage(messageString, version);
             } catch (Exception e) {
                 e.printStackTrace();
                 log.error(e.getMessage());
                 processed = e.getMessage();
             }
-            saveRawMessage(null, txtMessage.getText(), symKeyBase64, publicKeyId, processed);
+            saveRawMessage(null, txtMessage.getText(), symKeyBase64, publicKeyId, processed, version);
             if (processed!=null) {
                 log.warn("Raw message stored but an error occurred while processing the message. Please, check logs");
             }
@@ -132,36 +144,31 @@ public class SQSListener implements MessageListener, Serializable {
 		}
 	}
 
-    protected void saveMessage(String messageString) throws C3PROException {
+    protected void saveMessage(String messageString, String version) throws C3PROException {
         System.out.println(messageString);
         String resourceType = this.getResourceType(messageString);
         Response resp = null;
 
         try {
             log.info("Saving " + resourceType + " fhir resource");
-            switch(resourceType) {
-                case FHIR_QA:
-                    messageString = replaceSubjectIdQA(messageString);
-                    resp = fhirCell.postQuestionnaireAnswers(messageString);
-                    break;
-                case FHIR_CON:
-                    storeContract(messageString);
-                    //resp = fhirCell.postContract(messageString);
-                    break;
-                case FHIR_OBSERVATION:
-                    messageString = replaceSubjectIdObs(messageString);
-                    resp = fhirCell.postObservation(messageString);
-                    break;
-                case FHIR_PATIENT:
-                    Patient patient = replaceSubjectIdPatient(messageString);
-                    messageString = ctx.newJsonParser().encodeResourceToString(patient);
-                    resp = fhirCell.putPatient(messageString, patient.getId().getIdPart());
-                    break;
-                default:
-                    throw new C3PROException("FHIR Resource " + resourceType + " not supported");
+            if (resourceType.equals(FHIR_PATIENT)) {
+                // If it's a patient resource, we PUT the resource to the fhir cell
+                String [] ret = replaceSubjectIdPatient(messageString);
+                String resource = ret[0];
+                String idResource = ret[1];
+                resp = fhirCell.putResource(resource, resourceType, version, idResource);
+            } else if (resourceType.equals(FHIR_CONTRACT)) {
+                // If we have a contract resource, we store it in the internal db
+                storeContract(messageString);
+            } else {
+                // Otherwise, we POST the resource to the fhir cell
+                String resource = replaceSubjectReference(messageString);
+                resp = fhirCell.postResource(resource, resourceType, version);
             }
-
         } catch (IOException e) {
+            e.printStackTrace();
+            throw new C3PROException(e.getMessage(), e);
+        } catch (JSONException e) {
             e.printStackTrace();
             throw new C3PROException(e.getMessage(), e);
         }
@@ -172,56 +179,44 @@ public class SQSListener implements MessageListener, Serializable {
         }
 	}
 
-    protected String replaceSubjectIdQA(String message) throws C3PROException {
-        QuestionnaireAnswers qa = (QuestionnaireAnswers) ctx.newJsonParser().parseResource(message);
-        String subject = qa.getSubject().getReference().getIdPart();
-        if (subject == null) {
-            log.warn("Subject is null in a QuestionnaireAnswers Resource");
-            return message;
-        }
-        String i2b2Subject = findI2B2Subject(subject);
-
-        qa.getSubject().setReference("Patient/"+i2b2Subject);
-        return ctx.newJsonParser().encodeResourceToString(qa);
-
+    protected String [] replaceSubjectIdPatient(String message) throws C3PROException, JSONException {
+        JSONObject patientJSON = new JSONObject(message);
+        String subjectId = patientJSON.getString(FHIR_RESOURCE_ID);
+        String i2b2Subject = findI2B2Subject(subjectId);
+        patientJSON.put(FHIR_RESOURCE_ID, i2b2Subject);
+        String [] ret = new String [2];
+        ret[0] = patientJSON.toString();
+        ret[1] = i2b2Subject;
+        return ret;
     }
 
-    protected Patient replaceSubjectIdPatient(String message) throws C3PROException {
-        Patient patient = (Patient) ctx.newJsonParser().parseResource(message);
-        IdDt iddt = patient.getId();
-        String subject = iddt.getIdPart();
-        String i2b2Subject = findI2B2Subject(subject);
-        IdDt newId = new IdDt("Patient", i2b2Subject , "1");
-        patient.setId(newId);
-        return patient;
-    }
-
-    protected String replaceSubjectIdObs(String message) throws C3PROException {
-        Observation obs = (Observation) ctx.newJsonParser().parseResource(message);
-        String subject = obs.getSubject().getReference().getIdPart();
-        if (subject == null) {
-            log.warn("Subject is null in a Observation Resource");
-            return message;
+    protected String replaceSubjectReference(String message) throws C3PROException, JSONException {
+        JSONObject obsJSON = new JSONObject(message);
+        JSONObject subjectJSON = obsJSON.getJSONObject(FHIR_RESOURCE_SUBJECT);
+        String subjectRef = subjectJSON.getString(FHIR_RESOURCE_REFERENCE);
+        String [] parts = subjectRef.split("/");
+        if (parts.length<2) {
+            log.error("Subject reference missing:" + subjectRef);
+            throw new C3PROException("Subject reference not informed properly!");
         }
-        String i2b2Subject = findI2B2Subject(subject);
-
-        obs.getSubject().setReference("Patient/"+i2b2Subject);
-        return ctx.newJsonParser().encodeResourceToString(obs);
-
+        String i2b2Subject = findI2B2Subject(parts[1]);
+        subjectJSON.put(FHIR_RESOURCE_REFERENCE, parts[0]+"/"+i2b2Subject);
+        obsJSON.put(FHIR_RESOURCE_SUBJECT, subjectJSON);
+        return obsJSON.toString();
     }
 
     public void reprocess(String id) throws Exception {
         Resource resource = this.resourceAccess.findById(id);
-        byte [] messageEnc = Base64.decodeBase64(resource.getJson());
+        byte [] messageEnc = Base64.decodeBase64(resource.getJson().getBytes());
 
         // Get the symetric key as metadata
-        String symKeyBase64 =  resource.getKey(); //messageWrapper.getStringProperty(AppConfig.getProp(AppConfig.SECURITY_METADATAKEY));
-        String publicKeyId = resource.getKeyId(); // messageWrapper.getStringProperty(AppConfig.getProp(AppConfig.SECURITY_METADATAKEY_ID));
+        String symKeyBase64 =  resource.getKey();
+        String publicKeyId = resource.getKeyId();
 
 
         publicKeyId = publicKeyId.trim();
         // We decrypt the secret key of the message using the private key
-        byte [] secretKeyEnc = Base64.decodeBase64(symKeyBase64);
+        byte [] secretKeyEnc = Base64.decodeBase64(symKeyBase64.getBytes());
         byte [] secretKey = decryptSecretKey(secretKeyEnc, publicKeyId);
 
         // We decrypt the message using the secret key
@@ -229,7 +224,7 @@ public class SQSListener implements MessageListener, Serializable {
         String messageString = new String(message, AppConfig.UTF);
         String processed = null;
         try {
-            saveMessage(messageString);
+            saveMessage(messageString, resource.getFhirVersion());
             //tx.begin();
             resource.setProcessed(null);
             em.persist(resource);
@@ -247,7 +242,7 @@ public class SQSListener implements MessageListener, Serializable {
         try {
             List<PatientMap> maps = this.patientMapAccess.findBySignature(signature);
             if (maps.size()==0) {
-                log.warn("No mapping correspondance for signature " + signature+". Probably the contract has not been " +
+                log.warn("No mapping correspondence for signature " + signature+". Probably the contract has not been " +
                         "processed yet. We create an entrance anyway and update it when needed");
                 String subjectId=UUID.randomUUID().toString();
                 PatientMap patientMap = new PatientMap();
@@ -298,7 +293,7 @@ public class SQSListener implements MessageListener, Serializable {
         }
     }
 
-    protected void storeContract(String contractJson) throws C3PROException {
+    protected void storeContract(String message) throws C3PROException {
         String id = null;
         String version = null;
         Date startDate = null;
@@ -308,31 +303,35 @@ public class SQSListener implements MessageListener, Serializable {
         String signature = null;
 
         try {
-            Contract contract = (Contract) ctx.newJsonParser().parseResource(contractJson);
-            id = contract.getId().getIdPart();
-            //version = contract.getResourceMetadata().get(ResourceMetadataKeyEnum.VERSION).toString();
-            //version = (String) contract.getResourceMetadata().get("versionId");
+            JSONObject contractJSON = new JSONObject(message);
+            // Get resource id
+
+            id = contractJSON.optString(FHIR_RESOURCE_ID, null);
+
+            // Get applies date
+            JSONObject applies = contractJSON.getJSONObject(FHIR_CONTRACT_APPLIES);
+            String startDateStr = applies.getString(FHIR_CONTRACT_APPLIES_START);
+            SimpleDateFormat sdf = new SimpleDateFormat(FHIR_DATE_FORMAT);
+            startDate = sdf.parse(startDateStr);
             version = "0";
-            startDate = contract.getApplies().getStart();
-            system = contract.getSigner().
-                    get(0).
-                    getType().
-                    get(0).getSystem();
 
-            code = contract.getSigner().
-                    get(0).
-                    getType().
-                    get(0).getCode();
+            // Get signature (subject UUID stored in device)
+            JSONArray signer = contractJSON.getJSONArray(FHIR_CONTRACT_SIGNER);
+            JSONObject signer0 = signer.getJSONObject(0);
 
-            display = contract.getSigner().
-                    get(0).
-                    getType().
-                    get(0).getDisplay();
+            signature = signer0.getString(FHIR_CONTRACT_SIGNER_SIGNATURE);
 
-            signature = contract.getSigner().
-                    get(0).getSignature();
+            // Get type information. THey are optional!
 
-
+            try {
+                JSONArray type = signer0.getJSONArray(FHIR_CONTRACT_SIGNER_TYPE);
+                JSONObject type0 = type.getJSONObject(0);
+                system = type0.getString(FHIR_CONTRACT_SIGNER_TYPE_SYSTEM);
+                code = type0.getString(FHIR_CONTRACT_SIGNER_TYPE_CODE);
+                display = type0.getString(FHIR_CONTRACT_SIGNER_TYPE_DISPLAY);
+            } catch (Exception e) {
+                log.warn("type, code, system or display elements not present on CONTRACT Resource");
+            }
         } catch (Exception e) {
             e.printStackTrace();
             throw new C3PROException(e.getMessage(), e);
@@ -390,7 +389,8 @@ public class SQSListener implements MessageListener, Serializable {
 
     }
 
-    protected void saveRawMessage(String uuid, String message, String key, String keyId, String processed) throws C3PROException {
+    protected void saveRawMessage(String uuid, String message, String key, String keyId, String processed,
+                                  String version) throws C3PROException {
         String newUUID = uuid;
         if (this.em == null) {
             log.warn("EntityManager is null. The raw message will not be stored.");
@@ -404,6 +404,7 @@ public class SQSListener implements MessageListener, Serializable {
         res.setKey(key);
         res.setKeyId(keyId);
         res.setProcessed(processed);
+        res.setFhirVersion(version);
         try {
             tx.begin();
             em.persist(res);

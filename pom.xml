@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.bch.c3pro</groupId>
     <artifactId>c3pro-consumer</artifactId>
-    <version>0.0.1</version>
+    <version>1.1.0</version>
     <packaging>war</packaging>
     <name>c3pro consumer</name>
   
@@ -62,18 +62,6 @@
     </dependencyManagement>
     
     <dependencies>
-        <!-- This dependency includes the core HAPI-FHIR classes -->
-	<dependency>
-	    <groupId>ca.uhn.hapi.fhir</groupId>
-		<artifactId>hapi-fhir-base</artifactId>
-		<version>0.9</version>
-	    </dependency>
-        <!-- At least one "structures" JAR must also be included -->
-	<dependency>
-	    <groupId>ca.uhn.hapi.fhir</groupId>
-	    <artifactId>hapi-fhir-structures-dstu2</artifactId>
-	    <version>0.9</version>
-	</dependency>
         <dependency>
             <groupId>com.oracle</groupId>
             <artifactId>ojdbc14</artifactId>
@@ -82,7 +70,7 @@
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk</artifactId>
-            <version>1.9.33</version>
+            <version>1.10.38</version>
         </dependency>
 
         <dependency>
@@ -93,6 +81,11 @@
         </dependency>
 
         <!-- Import the CDI API, we use provided scope as the API is included in JBoss -->
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.3.3</version>
+        </dependency>
         <dependency>
             <groupId>javax.enterprise</groupId>
             <artifactId>cdi-api</artifactId>
@@ -216,7 +209,13 @@
             <artifactId>json</artifactId>
             <version>${json.version}</version>
         </dependency>
-    
+
+        <dependency>
+            <groupId>org.skyscreamer</groupId>
+            <artifactId>jsonassert</artifactId>
+            <version>1.2.3</version>
+        </dependency>
+
 		<dependency>
             <groupId>org.jboss.spec.javax.servlet</groupId>
             <artifactId>jboss-servlet-api_3.0_spec</artifactId>
