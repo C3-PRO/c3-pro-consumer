@@ -2,7 +2,7 @@
 
 C3-PRO-Consumer is a system that consumes from an AWS SQS queue, stores the raw elements in an oracle DB and exports the data into an i2b2 instance (https://www.i2b2.org/). The elements in the queue are FHIR resources pushed trough C3-PRO-Server (https://bitbucket.org/ipinyol/c3pro-server/overview).
 
-The system servers the following rest methods to start and stop the consumption of elements in the queue:
+The system serves the following REST methods to start and stop the consumption of elements in the queue:
 
     HTTP/1.1 POST /c3pro-consumer/rest/actions/start
     HTTP/1.1 POST /c3pro-consumer/rest/actions/stop
@@ -16,7 +16,6 @@ The system uses the following external resources:
 * **SQS queue**: A queue deployed in AWS to consume from. This queue must be configured and populated as described in https://bitbucket.org/ipinyol/c3pro-server/overview.
 * **Oracle DB**: An oracle schema is needed to store the raw data from the SQS. Ideally, this schema should be located in the intranet of an organization.
 * **FHIR DSTU2-1.0.2 or DSTU2-0.9.0** compliant system: To store the consumed resourced. In the current release we store the data in i2b2 through the newly created [i2b2 fhir cell](https://bitbucket.org/ihlchip/fhir-i2b2-cell).
-
 
 ## Installing Maven, Java && JBoss AS7 ##
 
@@ -151,7 +150,7 @@ To obtain access keys and secrets from AWS, visit http://docs.aws.amazon.com/AWS
 
 ## Generating and installing public-private keys ##
 
-The information retrieved from the SQS is encrypted using a symmetric key. Such symmetric key is sent via metadata of the elements inserted in the queue, and it's also encrypted using a public key. Also, the ID of the public key is sent as metadata. The C3-PRO-Consumer uses the corresponding private key to decrypt the symmetric key and finally decrypt the fhir resource. 
+The information retrieved from the SQS is encrypted using a symmetric key. Such symmetric key is sent via metadata of the elements inserted in the queue, encrypted using a public key. Also, the ID of the public key is sent as metadata. The C3-PRO-Consumer uses the corresponding private key to decrypt the symmetric key and finally decrypt the fhir resource. 
 
 To generate and install a new key pair follow the steps:
 
@@ -172,13 +171,13 @@ These files will be generated:
     public-c3pro.der
     private-c3pro.der
 
-*public-c3pro.der* is the public key file and must be uploaded to the S3 bucket used by C3-PRO-Server. See https://bitbucket.org/ipinyol/c3pro-server/overview for details
+*public-c3pro.der* contains the public key and must be uploaded to the S3 bucket used by C3-PRO-Server. See https://bitbucket.org/ipinyol/c3pro-server/overview for details.
 
-*private-c3pro.der* is the private key file and, under any circumstance, can be shared or distributed. It should be backed up in a secure device and install it in the following directory:
+*private-c3pro.der* contains the private key and must not be shared nor distributed under any circumstance. It should be backed up in a secure device and installed in the following directory:
 
     ~/.c3pro/{{new UUID}}/private-c3pro.der
 
-If this private key is lost, it won't be possible to recuperate the messages in the queue.
+If this private key is lost, you won't be able to recuperate the messages in the queue.
 
 ## Configuration Parameters ##
 
@@ -216,28 +215,19 @@ They are the property names of the messages in the queue
 
     app.security.metadatakey=pkey
 
-<<<<<<< HEAD
-=======
-
->>>>>>> dstu2-1.0.2
 *The property name that holds the public key id used to encrypt the private symmetric AES key*
 
     app.security.metadatakeyid=pkey_id
 
-<<<<<<< HEAD
-=======
-
 *The property name that holds the fhir version*
 
     app.fhir.metadata.version=version
-
 
 *The default version of fhir in case the version is not informed in the queue message*
 
 
     app.fhir.version.default=0.5.0
 
->>>>>>> dstu2-1.0.2
 ### Encryption parameters (should not be changed! or changed in tune with the Research Kit App and the c3pro-server) ###
 
 *The asymmetric full algorithm used to encrypt and decrypt the symetric random key
