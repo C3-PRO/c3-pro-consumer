@@ -226,7 +226,7 @@ They are the property names of the messages in the queue
 *The default version of fhir in case the version is not informed in the queue message*
 
 
-    app.fhir.version.default=0.5.0
+    app.fhir.version.default=0.9.0
 
 ### Encryption parameters (should not be changed! or changed in tune with the Research Kit App and the c3pro-server) ###
 
