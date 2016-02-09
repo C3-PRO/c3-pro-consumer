@@ -89,12 +89,18 @@ public class HttpRequest {
 
     /**
      * Static class that captures the http responses
+     * @author CHIP-IHL
      */
     public static class ResponseJava implements Response {
         private HttpURLConnection con;
         private String content;
         private int status;
 
+        /**
+         * Constructor
+         * @param con The HttpURLConnection connection
+         * @throws IOException In case of I/O error
+         */
         ResponseJava(HttpURLConnection con) throws IOException {
             BufferedReader in;
             String response = "";
@@ -120,11 +126,19 @@ public class HttpRequest {
             this.content = response;
         }
 
+        /**
+         * Returns the http status code
+         * @return The status code
+         */
         @Override
         public int getResponseCode() {
             return this.status;
         }
 
+        /**
+         * Returns the content of the http
+         * @return The content
+         */
         @Override
         public String getContent() {
             return this.content;

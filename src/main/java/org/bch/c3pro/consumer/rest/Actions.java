@@ -77,8 +77,8 @@ public class Actions {
     }
 
     /**
-     * Implements the end point 'reprocess/{id}'.
-     * Calls the method {@link SQSListener#reprocess(String)}
+     * Implements the end point 'reprocess/{id}',
+     * which calls the method {@link SQSListener#reprocess(String)}
      * @return HTTP response
      */
     @POST

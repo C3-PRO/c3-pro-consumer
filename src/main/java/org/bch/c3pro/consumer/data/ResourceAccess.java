@@ -7,7 +7,7 @@ import javax.persistence.EntityManager;
 
 /**
  * Class that enables basic hibernate queries over {@link ResourceAccess} DB
- * @author CHIT-IHL
+ * @author CHIP-IHL
  */
 public class ResourceAccess {
     private EntityManager em;

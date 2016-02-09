@@ -6,6 +6,7 @@ import java.util.Date;
 /**
  * Entity model for the DB resource_table table
  * It captures the raw messages consumed from the queue.
+ * @author CHIP-IHL
  */
 @Entity
 @Table(name="resource_table")
