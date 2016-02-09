@@ -16,7 +16,9 @@ import javax.jms.MessageConsumer;
 import javax.jms.Session;
 
 /**
- * Created by CH176656 on 5/1/2015.
+ * Class that manages the access to the Amazon SQS.
+ * It's a singleton. Th method {@link SQSAccess#getInstance()} should be the only way to ger an instance of the class
+ * @author CHIP-IHL
  */
 public class SQSAccess {
 
@@ -28,6 +30,10 @@ public class SQSAccess {
     // just to defeat instantiation
     protected SQSAccess() {}
 
+    /**
+     * Returns the instance of a {@link SQSAccess}
+     * @return the object
+     */
     public static SQSAccess getInstance() {
         if (sqsAccessSingleton == null) {
             SQSAccess.sqsAccessSingleton = new SQSAccess();
@@ -35,6 +41,11 @@ public class SQSAccess {
         return SQSAccess.sqsAccessSingleton;
     }
 
+    /**
+     * Starts the listener of the queue
+     * @throws JMSException In case of SQS problems
+     * @throws C3PROException In case the properties that describe the sqs access are missing
+     */
     public void startListening() throws JMSException, C3PROException {
         if (this.connection==null) {
             setUpConnection();
@@ -47,7 +58,13 @@ public class SQSAccess {
         }
     }
 
-    // Very useful for testing purposes and for a more general approach
+    /**
+     * Starts the listener of the queue passed by parameter
+     * @param listener The listener
+     * @throws JMSException In case of SQS problems
+     * @throws C3PROException In case the properties that describe the sqs access are missing
+
+     */
     public void startListening(SQSListener listener) throws JMSException, C3PROException {
         if (this.connection==null) {
             setUpConnection();

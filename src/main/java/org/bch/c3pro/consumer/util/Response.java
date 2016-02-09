@@ -2,7 +2,7 @@ package org.bch.c3pro.consumer.util;
 
 /**
  * Interface for http responses
- * Created by CH176656 on 3/26/2015.
+ * @author CHIP-IHL
  */
 public interface Response {
     public int getResponseCode();

@@ -8,8 +8,8 @@ import java.util.Calendar;
 import java.util.Date;
 
 /**
- * Simple utilities to read files
- * Created by CH176656 on 3/26/2015.
+ * Simple utilities to read files ad build urls
+ * @author CHIP-IHL
  */
 public class Utils {
 
@@ -20,7 +20,7 @@ public class Utils {
      * @param cl        The Class
      * @param fileName  The filename
      * @param sb        The StringBuffer
-     * @param sep       The line sepparator
+     * @param sep       The line separator
      * @throws Exception
      */
     public static void textFileToStringBuffer(Class cl, String fileName, StringBuffer sb, String sep)
@@ -37,6 +37,14 @@ public class Utils {
         }
     }
 
+    /**
+     * Generates a url given the http protocol, the host the port and the end point
+     * @param protocol  The protocol, typically http | https
+     * @param host      The host
+     * @param port      The port
+     * @param endpoint  The end point
+     * @return          The well-formed url
+     */
     public static String generateURL(String protocol, String host, String port, String endpoint) {
         StringBuffer sb = new StringBuffer();
         sb.append(protocol);
@@ -48,14 +56,5 @@ public class Utils {
         }
         sb.append(endpoint);
         return sb.toString();
-    }
-
-    public static Date subtractDays(Date date, int days) {
-        Date dateWindow = new Date();
-        Calendar c = Calendar.getInstance();
-        c.setTime(date);
-        c.add(Calendar.DATE, -days);
-        dateWindow.setTime(c.getTime().getTime());
-        return dateWindow;
     }
 }

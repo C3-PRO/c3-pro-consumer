@@ -10,7 +10,8 @@ import javax.inject.Inject;
 import java.io.IOException;
 
 /**
- * Created by ipinyol on 7/10/15.
+ * Wrapper class to interact with i2b2 through the fhir cell
+ * @author CHIP-IHL
  */
 public class I2B2FHIRCell {
 
@@ -20,14 +21,14 @@ public class I2B2FHIRCell {
     private HttpRequest httpRequest;
 
     /**
-     * Performs a PUT call over a FHIR resource
+     * Performs a PUT call over a FHIR resource to the FHIR Cell
      * @param resource      The payoff resource
      * @param resourceName  The resource type, i.e. Patient
      * @param version       The FHIR version, i.e. DSTU2-1.0.2, DSTU2-0.9.0
      * @param idResource    The id of the resource. This will be part of the
      * @return
-     * @throws C3PROException
-     * @throws IOException
+     * @throws C3PROException   In case the properties needed to build the enpoint are not informed
+     * @throws IOException  In case of input/ouptut http problems
      */
     public Response putResource(String resource, String resourceName, String version, String idResource)
             throws C3PROException, IOException {
@@ -35,6 +36,15 @@ public class I2B2FHIRCell {
         return put(resource, endPoint, "/"+idResource);
     }
 
+    /**
+     * Performs a PUT call over a FHIR resource to the FHIR Cell
+     * @param resource      The payoff resource
+     * @param resourceName  The resource type, i.e. Patient
+     * @param version       The FHIR version, i.e. DSTU2-1.0.2, DSTU2-0.9.0
+     * @return
+     * @throws C3PROException   In case the properties needed to build the enpoint are not informed
+     * @throws IOException  In case of input/ouptut http problems
+     */
     public Response postResource(String resource, String resourceName, String version)
             throws C3PROException, IOException {
         String endPoint = buildEndPointwithVersion(resourceName, version);

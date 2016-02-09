@@ -11,8 +11,8 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * Configuration file
- * Created by CH176656 on 3/20/2015.
+ * Class that manages the configuration parameters
+ * @author CHIP-IHL
  */
 public class AppConfig {
 
@@ -83,7 +83,12 @@ public class AppConfig {
         }
     }
 
-
+    /**
+     * Get the value of the property described in conf.properties file
+     * @param key The key of the property
+     * @return The value of the property.
+     * @throws C3PROException If the property key does not exist.
+     */
     public static String getProp(String key) throws C3PROException {
         if (prop.isEmpty()) {
             uploadConfiguration();
@@ -91,6 +96,13 @@ public class AppConfig {
         return prop.getProperty(key);
     }
 
+    /**
+     * Returns the content of the the credential file whsoe path is encoded in the value of the key parameter
+     * @param key The key of the property in config.properties that contains the path of the file
+     * @return The content of the file
+     * @throws IOException If there is a problem reading the file
+     * @throws C3PROException In case the parameter is not well-formed
+     */
     public static String getAuthCredentials(String key) throws IOException, C3PROException {
         String path = getProp(key);
         String finalPath = path;

@@ -12,20 +12,47 @@ import java.net.URL;
 
 /**
  * Abstract functionality for REST calls
- * Created by CH176656 on 3/20/2015.
+ * @author CHIP-IHL
  */
 @Stateless
 public class HttpRequest {
 
+    /**
+     * Performs an empty POST rest call to to the given end point using authorization header
+     * @param urlStr The url
+     * @param headerAuth The authorization header
+     * @return The http response
+     * @throws IOException In case input/output error
+     */
     public Response doPostGeneric(String urlStr,  String headerAuth) throws IOException {
         return doPostGeneric(urlStr, null, headerAuth, null);
     }
 
+    /**
+     * Performs a POST rest call to the given end point with content, authorization header and type header
+     * @param urlStr The url
+     * @param content The content
+     * @param headerAuth The authorization header
+     * @param headerContentType The Content type header
+     * @return The hhtp response
+     * @throws IOException In case input/output error
+     */
     public Response doPostGeneric(String urlStr, String content, String headerAuth,
                                   String headerContentType) throws IOException {
         return doPostGeneric(urlStr, content, headerAuth, headerContentType, "POST");
     }
 
+    /**
+     * Performs the rest call provided by 'operation' to the given end point with content, authorization header and
+     * type header
+     * @param urlStr The url
+     * @param content The content
+     * @param headerAuth The authorization header
+     * @param headerContentType The Content type header
+     * @param operation The operation type: POST | GET | DELETE
+     * @return The http response
+     * @throws IOException In case input/output error
+     */
     public Response doPostGeneric(String urlStr, String content, String headerAuth,
                                   String headerContentType, String operation) throws IOException {
 
@@ -60,6 +87,9 @@ public class HttpRequest {
         return resp;
     }
 
+    /**
+     * Static class that captures the http responses
+     */
     public static class ResponseJava implements Response {
         private HttpURLConnection con;
         private String content;

@@ -40,6 +40,10 @@ import org.json.JSONObject;
 
 import org.json.JSONException;
 
+/**
+ * Class that implements a listener of the Amazon SQS
+ * @author CHIP-IHL
+ */
 @Default
 public class SQSListener implements MessageListener, Serializable {
 	private Map<String, PrivateKey> privateKeyMap = new HashMap<>();
@@ -80,6 +84,11 @@ public class SQSListener implements MessageListener, Serializable {
     @Inject
     protected ResourceAccess resourceAccess;
 
+    /**
+     * Method that activates when a message is received int eh queue.
+     * Stores the raw message in the DB, decrypts the message and sends the fhir resource to the fhir i2b2 cell
+     * @param messageWrapper The message
+     */
 	@Override
 	public void onMessage(Message messageWrapper) {
 		try {
@@ -205,6 +214,13 @@ public class SQSListener implements MessageListener, Serializable {
         return obsJSON.toString();
     }
 
+    /**
+     * Reprocess a message that has been stored in the DB given its id.
+     * Each raw encrypted message is stored in a DB. Each row is identifier with a unique UUID that acts as the
+     * the identifier of the row. This method allows to reprocess the message identified by its id
+     * @param id The id
+     * @throws Exception if any probelm occurs
+     */
     public void reprocess(String id) throws Exception {
         Resource resource = this.resourceAccess.findById(id);
         byte [] messageEnc = Base64.decodeBase64(resource.getJson().getBytes());
@@ -427,6 +443,8 @@ public class SQSListener implements MessageListener, Serializable {
         this.resourceAccess.setEntityManager(em);
     }
 
+
+    // testing purposes
 	public static byte [] decryptMessage(byte [] messageEnc, byte[] secretKeyBytes) throws GeneralSecurityException,
             C3PROException {
         SecretKeySpec secretKeySpec = new SecretKeySpec(secretKeyBytes,

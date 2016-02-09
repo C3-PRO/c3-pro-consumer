@@ -21,7 +21,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 
 /**
- * Created by CH176656 on 5/11/2015.
+ * Class that implements the public REST methods.
+ * @author CHIP-IHL
  */
 @Path("/actions")
 @RequestScoped
@@ -36,6 +37,11 @@ public class Actions {
     @Inject @Default
     private SQSListener listener;
 
+    /**
+     * Implements the end point 'start'. See documentation
+     * Starts consuming from the queue
+     * @return HTTP response
+     */
     @POST
     @Path("/start")
     public Response startService() {
@@ -51,6 +57,11 @@ public class Actions {
         return Response.status(Response.Status.OK).build();
     }
 
+    /**
+     * Implements the end point 'stop'. See documentation
+     * Stops consuming from the queue
+     * @return HTTP response
+     */
     @POST
     @Path("/stop")
     public Response stopService() {
@@ -65,6 +76,11 @@ public class Actions {
         return Response.status(Response.Status.OK).build();
     }
 
+    /**
+     * Implements the end point 'reprocess/{id}'.
+     * Calls the method {@link SQSListener#reprocess(String)}
+     * @return HTTP response
+     */
     @POST
     @Path("/reprocess/{id}")
     public Response reprocess(@PathParam("id") String rowId) {

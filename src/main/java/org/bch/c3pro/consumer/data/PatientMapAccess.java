@@ -12,11 +12,8 @@ import javax.persistence.criteria.Root;
 import java.util.List;
 
 /**
- * Created with IntelliJ IDEA.
- * User: CH176656
- * Date: 7/24/15
- * Time: 6:26 AM
- * To change this template use File | Settings | File Templates.
+ * Class that enables basic hibernate queries over {@link PatientMap} DB
+ * @author CHIT-IHL
  */
 
 public class PatientMapAccess {
@@ -53,6 +50,10 @@ public class PatientMapAccess {
         return out;
     }
 
+    /**
+     * Set the entity manager to be used
+     * @param em The entoty manager
+     */
     public void setEntityManager(EntityManager em) {
         this.em = em;
     }
