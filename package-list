@@ -1,0 +1,7 @@
+org.bch.c3pro.consumer.config
+org.bch.c3pro.consumer.data
+org.bch.c3pro.consumer.exception
+org.bch.c3pro.consumer.external
+org.bch.c3pro.consumer.model
+org.bch.c3pro.consumer.rest
+org.bch.c3pro.consumer.util
