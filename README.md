@@ -4,8 +4,10 @@ C3-PRO-Consumer is a system that consumes from an AWS SQS queue, stores the raw 
 
 The system serves the following REST methods to start and stop the consumption of elements in the queue:
 
+```javascript
     HTTP/1.1 POST /c3pro-consumer/rest/actions/start
     HTTP/1.1 POST /c3pro-consumer/rest/actions/stop
+```
 
 # Configuration and Deployment #
 
@@ -39,14 +41,12 @@ The system uses an oracle DB to store the raw information extracted form the que
 * Deploy the provided oracle jdbc driver in jBoss or anywhere accessible through the project:
 
 ```
-#!shell
-$HOME_C3PRO_CONSUMER/cp ojdbc14.jar $JBOSS_HOME/standalone/deployments
+    $HOME_C3PRO_CONSUMER/cp ojdbc14.jar $JBOSS_HOME/standalone/deployments
 ```
 
 * Configure the data source by editing the file *$JBOSS_HOME/standalone/configuration/standalone.xml*. In the data source section place the following:
 
-```
-#!xml
+```xml
 
 <datasource jndi-name="java:jboss/datasources/c3proDS" pool-name="c3proDS" enabled="true" use-java-context="true">
     <connection-url>{{jdbc_connection_to_db}}</connection-url>
@@ -60,9 +60,7 @@ $HOME_C3PRO_CONSUMER/cp ojdbc14.jar $JBOSS_HOME/standalone/deployments
 
 * **Note for production deployments**: It's not recommended to display raw DB credentials in the configuration files, even when the servers are protected. One possible way is to use security domains to wrap encrypted credentials. For instance:
   
-```
-#!xml
-
+```xml
 <datasource jndi-name="java:jboss/datasources/c3proDS" pool-name="c3proDS" enabled="true" use-java-context="true">
     <connection-url>{{jdbc_connection_to_db}}</connection-url>
     <driver>ojdbc14.jar</driver>
@@ -74,8 +72,7 @@ $HOME_C3PRO_CONSUMER/cp ojdbc14.jar $JBOSS_HOME/standalone/deployments
 
 and in the security domain section:
 
-```
-#!xml
+```xml
 <security-domain name="secure-c3pro-credentials" cache-type="default">
    <authentication>
       <login-module code="org.picketbox.datasource.security.SecureIdentityLoginModule" flag="required">
